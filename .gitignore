@@ -1,0 +1,17 @@
+# Local development directory
+
+localdev
+var
+bin
+.fuse_hidden*
+
+# ossm-web
+
+__pycache__
+local_settings.py
+
+# ossm-core
+
+.build
+Packages
+

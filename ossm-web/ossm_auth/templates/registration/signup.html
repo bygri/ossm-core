@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block title %}Sign up to OSSM{% endblock %}
+
+{% block content %}
+
+  <div class='section'>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-xs-12 col-sm-10 col-md-8'>
+          <h2>Sign up</h2>
+          <p>
+            Sign up here for access to OSSM.
+          </p>
+
+          <div style='height: 20px'></div>
+
+          <form class='form-horizontal' action='.' method='post'>
+            {% csrf_token %}
+            <div class='form-group'>
+              {% with form.nickname as field %}
+              <label for='{{ field.id_for_label }}' class='col-sm-3 control-label'>Nickname</label>
+              <div class='col-sm-9'>
+                <input type='email' class='form-control' id='{{ field.id_for_label }}' name='{{ field.html_name }}' {% if field.value %}value='{{ field.value }}'{% endif %}>
+                {% if field.errors %}
+                <div class='alert alert-warning'>{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class='form-group'>
+              {% with form.email as field %}
+              <label for='{{ field.id_for_label }}' class='col-sm-3 control-label'>Email</label>
+              <div class='col-sm-9'>
+                <input type='email' class='form-control' id='{{ field.id_for_label }}' name='{{ field.html_name }}' {% if field.value %}value='{{ field.value }}'{% endif %}>
+                {% if field.errors %}
+                <div class='alert alert-warning'>{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class='form-group'>
+              {% with form.password as field %}
+              <label for='{{ field.id_for_label }}' class='col-sm-3 control-label'>Password</label>
+              <div class='col-sm-9'>
+                <input type='password' class='form-control' id='{{ field.id_for_label }}' name='{{ field.html_name }}'>
+                {% if field.errors %}
+                <div class='alert alert-warning'>{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class='form-group'>
+              {% with form.timezone_name as field %}
+              <label for='{{ field.id_for_label }}' class='col-sm-3 control-label'>Timezone</label>
+              <div class='col-sm-9'>
+                {{ field }}
+                {% if field.errors %}
+                <div class='alert alert-warning'>{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class='form-group'>
+              {% with form.language_code as field %}
+              <label for='{{ field.id_for_label }}' class='col-sm-3 control-label'>Language</label>
+              <div class='col-sm-9'>
+                {{ field }}
+                {% if field.errors %}
+                <div class='alert alert-warning'>{{ field.errors }}</div>
+                {% endif %}
+              </div>
+              {% endwith %}
+            </div>
+            <div class='form-group'>
+              <div class='col-sm-offset-3 col-sm-9'>
+                <button type='submit' class='btn btn-primary'>Sign in</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

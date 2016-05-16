@@ -1,0 +1,80 @@
+{% load staticfiles %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang='en-AU'>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <title>{% block title%}{% trans "OSSM, the open-source sports manager game" %}{% endblock %}</title>
+    <link rel='stylesheet' href='{% static "flatly.bootstrap.min.css" %}'>
+    <script src='https://code.jquery.com/jquery-2.2.3.min.js'></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <header class='container' style='margin-top: 2em'>
+      <nav class='navbar navbar-inverse'>
+        <!-- Non-collapsed -->
+        <div class='navbar-header'>
+          <button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#navbar-collapse'>
+            <span class='icon-bar'></span>
+            <span class='icon-bar'></span>
+            <span class='icon-bar'></span>
+          </button>
+          <a class='navbar-brand' href='/'>OSSM</a>
+        </div>
+        <!-- Collapsed -->
+        <div class='collapse navbar-collapse' id='navbar-collapse'>
+          <ul class='nav navbar-nav'>
+            <li><a href='{% url "index" %}'>
+              {% trans "Home" %}
+            </a></li>
+            {% if user.is_authenticated %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                {% trans "Discussion" %} <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu">
+                <li><a href='{% url "slack-invite" %}'>
+                  {% trans "Get invitation" %}
+                </a></li>
+                <li><a href='https://ossm.slack.com' target='_blank'>
+                  {% trans "Open Slack" %}
+                </a></li>
+              </ul>
+            </li>
+            {% endif %}
+            {% if user.is_staff %}
+            <li><a href='/admin/' target='_blank'>
+              {% trans "Admin" %}
+            </a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </nav>
+      <p class='text-right'>
+        {% if user.is_authenticated %}
+        Logged in as <strong>{{ user.get_full_name }}</strong>
+        —
+        <a href='{% url "logout" %}'>{% trans "Log out" %}</a>
+        —
+        <a href='{% url "my-user-detail" %}'>{% trans "View your profile" %}</a>
+        {% else %}
+        Not logged in. Would you like to <a href='{% url "user-create" %}'>sign up</a>
+        or <a href='{% url "login" %}'>log in</a>?
+        {% endif %}
+      </p>
+    </header>
+    <div class='container'>
+      {% block content %}Content goes here{% endblock %}
+    </div>
+    <footer class='container small'>
+      <hr>
+      <p>
+        {% trans "OSSM. It's awesome." %}<br>
+        {% trans "This is in early development. Data may get lost or wiped at any time (but you'll be kept informed on Slack)." %}
+        {% trans "There is no game here. Yet." %}
+      </p>
+    </footer>
+  </body>
+</html>

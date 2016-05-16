@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}User list{% endblock %}
+
+{% block content %}
+  <h1>List of active users</h1>
+
+
+  <table class='table'>
+    <thead>
+      <tr>
+        <th>Nickname</th>
+        <th>Timezone</th>
+        <th>Language</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.nickname }}</td>
+        <td>{{ user.timezoneName }}</td>
+        <td>{{ user.language }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

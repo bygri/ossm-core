@@ -1,0 +1,194 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-05-17 07:52+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ossm_auth/templates/ossm_auth/user_detail.html:10
+msgid "Things you can do next:"
+msgstr "What's next matey:"
+
+#: ossm_auth/templates/ossm_auth/user_detail.html:13
+msgid "Join the <a href='https://ossm.slack.com'>Slack discussion</a>"
+msgstr "'ave a rum in the <a href='https://ossm.slack.com'>Slack chat</a>"
+
+#: ossm_auth/templates/ossm_auth/user_detail.html:18
+msgid "Change your password"
+msgstr "Change yer password"
+
+#: ossm_auth/templates/ossm_auth/user_detail.html:21
+msgid "That's about it really."
+msgstr "Arr, that be all for now."
+
+#: ossm_web/templates/index.html:8
+msgid "Welcome"
+msgstr "Yarr, be welcome"
+
+#: ossm_web/templates/index.html:10
+msgid ""
+"OSSM is a re-envisioning of the multi-player strategic sports management "
+"game."
+msgstr "OSSM be another take on football management games."
+
+#: ossm_web/templates/index.html:13
+msgid "Here's the first principles of the project."
+msgstr "This be what we're doing."
+
+#: ossm_web/templates/index.html:22
+msgid "Some initial goals and ambitions:"
+msgstr "The goals be:"
+
+#: ossm_web/templates/index.html:30
+msgid "We need your help!"
+msgstr "I can't do this on me ownsome"
+
+#: ossm_web/templates/index.html:32
+msgid ""
+"Designers and developers are welcome, of course, but most of all we need "
+"players to give the game strategic\n"
+"    direction and vote on changes. There's also plenty of non-coding work "
+"that needs doing, so feel free\n"
+"    to help out no matter your skills. "
+msgstr ""
+"Designers and developers be good, but we be needing experienced deckhands "
+"to be helping us guide our ship the right way. There be plenty work for "
+"all mateys so drop by even if ye be a useless bugger."
+
+#: ossm_web/templates/index.html:37
+msgid "The best way to help is to sign up for OSSM then join our Slack team."
+msgstr "Ye must sign up for OSSM then sail into the Slack chat."
+
+#: ossm_web/templates/slack_invite.html:5
+#: ossm_web/templates/slack_invite.html:8
+msgid "Get your Slack invitation"
+msgstr "Get into Slack"
+
+#: ossm_web/templates/slack_invite.html:12
+msgid ""
+"<strong>Success!</strong> Your invitation has been sent. Check your email "
+"inbox and spam\n"
+"    folders."
+msgstr "<strong>Yar!</strong> Invite be posted. Check yer dispatches."
+
+#: ossm_web/templates/slack_invite.html:18
+msgid ""
+"<strong>Uh oh.</strong> Slack reported the following problem when processing "
+"your invite:"
+msgstr "<strong>Avast!</strong> Slack, the scurvy bugger, said:"
+
+#: ossm_web/templates/slack_invite.html:20
+msgid "Your email address was not accepted by Slack as valid."
+msgstr "There be something fishy about yer email address. It don't look right."
+
+#: ossm_web/templates/slack_invite.html:22
+msgid "You've already received an invitation. Check your spam folder."
+msgstr "Arrr, we sent ye an invite already, ye greedy bugger. Check yer spam."
+
+#: ossm_web/templates/slack_invite.html:24
+msgid ""
+"You already have a Slack account for the OSSM team! Visit Slack's\n"
+"    <a href='https://ossm.slack.com/forgot' target='_blank'>password reset</"
+"a> page\n"
+"    to recover access to your account."
+msgstr ""
+"Arr, ye have an account already. If ye have lost ye password, ye are a lazy "
+"pirate but ye can still <a href='https://ossm.slack.com/forgot "
+"target='_blank'>get another one</a>."
+
+#: ossm_web/templates/slack_invite.html:35
+msgid ""
+"If you don't have access to our Slack discussion group, just click the "
+"button below to get invited.\n"
+"    You will set up a new Slack password which will not be the same as your "
+"OSSM password. "
+msgstr ""
+"If ye don't have the password to the Slack chat, poke yer wooden peg-leg "
+"at the button below to get yer invite. Ye will then set up a new Slack "
+"password which be not the same as yer OSSM password."
+
+#: ossm_web/templates/slack_invite.html:41
+msgid "GET INVITATION"
+msgstr "SHIVER ME TIMBERS!!"
+
+#: ossm_web/templates/slack_invite.html:45
+msgid ""
+"Privacy note: Other members of the Slack group will be able to see your "
+"<strong>email address</strong>\n"
+"    and <strong>nickname</strong> if you join."
+msgstr ""
+"Ye be aware that other sailors in Slack will see yer <strong>email</strong> "
+"and <strong>nickname</strong> if ye proceed."
+
+#: ossm_web/templates/slack_invite.html:49
+msgid ""
+"If you have previously received an invitation, and lost your password, "
+"you'll need to visit Slack's\n"
+"    <a href='https://ossm.slack.com/forgot' target='_blank'>password reset</"
+"a> page."
+msgstr ""
+"If ye have an invitation already, and lost yer password, ye'll have to "
+"<a href='https://ossm.slack.com/forgot' target='_blank'>get another one</a> "
+"direct from Slack."
+
+#: templates/base.html:9
+msgid "OSSM, the open-source sports manager game"
+msgstr "OSSM, the game for managin' sporting teams"
+
+#: templates/base.html:30
+msgid "Home"
+msgstr "Home Port"
+
+#: templates/base.html:35
+msgid "Discussion"
+msgstr "Meet"
+
+#: templates/base.html:39
+#, fuzzy
+#| msgid "Get an invite"
+msgid "Get invitation"
+msgstr "Get on board"
+
+#: templates/base.html:42
+msgid "Open Slack"
+msgstr "Sail to Slack"
+
+#: templates/base.html:49
+msgid "Admin"
+msgstr "Captain's Cabin"
+
+#: templates/base.html:59
+msgid "Log out"
+msgstr "Abandon ship"
+
+#: templates/base.html:61
+msgid "View your profile"
+msgstr "See yer pretty face"
+
+#: templates/base.html:74
+msgid "OSSM. It's awesome."
+msgstr "OSSM. It be awesome."
+
+#: templates/base.html:75
+msgid ""
+"This is in early development. Data may get lost or wiped at any time (but "
+"you'll be kept informed on Slack)."
+msgstr ""
+"This ship be just gettin' started. Yer crew might get wiped out at any time "
+"(but ye'll be told on Slack)."
+
+#: templates/base.html:76
+msgid "There is no game here. Yet."
+msgstr "Yar, there be no game here. Yet."

@@ -1,0 +1,203 @@
+import Foundation
+
+// concept
+// a face has several slots - head, ear, eye, nose, mouth, hair, beard
+// a feature fits into a slot, has an identifying number, has one or more colours, and can generate SVG
+// the SVG template should be stored in the DB with macros like %MAINCOLOUR% which get string-replaced
+// by the actual colour.
+// the class will have to be able to tell the api how many features there are per slot
+// then there must be a way to compile the lot
+
+// alternatives:
+// do I need to explicitly name each slot? I could effectively re-use code between face and badge if I don't.
+// each feature record has a generator type: "face" or "badge"
+// also has a "slot" id number
+// has "isClippingMask" bool
+// then colours and templates
+//
+// we ask the Generator for a face or a badge. it tells us how many slots there are, and how many items per slot.
+// it doesn't know what each slot is called, but possibly the UI knows that.
+// badges aren't exactly like faces. they start the same yes, but have extra features like soccer ball pictures and
+// text, and they should be able to be moved around. I suppose facial features could be moved, a little?
+
+/**
+CREATE TABLE location (
+  identifier VARCHAR(40) NOT NULL,
+  level1Id INT UNSIGNED NOT NULL,
+  level2Id INT UNSIGNED NOT NULL,
+  level3Id INT UNSIGNED NOT NULL,
+  level4Id INT UNSIGNED NOT NULL
+);
+CREATE UNIQUE INDEX location_id ON location(level1Id, level2Id, level3Id, level4Id);
+*/
+
+struct ImageGenerator {
+
+  enum Kind {
+    case MaleFace
+    case MaleChildFace
+    case MaleAgedFace
+    
+    case FemaleFace
+    case FemaleChildFace
+    case FemaleAgedFace
+    
+    case ClubBadge
+  }
+  
+  struct ClipPath {
+    let kind: Kind
+    let svgTemplate: String // <circle cx='50' cy='50' r='50' />
+    
+    func svgLayer() -> String {
+      return "<clipPath id='clip'>\(svgTemplate)</clipPath>"
+    }
+  }
+  
+  struct Feature {
+    let kind: Kind
+    let slot: Int
+    let isClippingMask: Bool // only valid in slot 0
+    var primaryColour: String?
+    var secondaryColour: String?
+    var origin: NSPoint
+    let svgTemplate: String
+
+    func svgLayer() -> String {
+      // Take the svgTemplate, replaced macros with colours, and you're done.
+      var svg = svgTemplate
+      if let colour = primaryColour {
+        svg.replaceInstancesOfString("%COLOUR1%", withString: colour)
+      }
+      if let colour = secondaryColour {
+        svg.replaceInstancesOfString("%COLOUR2%", withString: colour)
+      }
+      return svg
+    }
+
+  }
+  
+  let clipPath: ClipPath?
+  let features: [Feature]
+  
+  func svg() -> String {
+    // Start with a blank SVG
+    // Apply a clip path if requested
+    if let clip = clipPath {
+      
+    }
+    // Add features, sorted by slot
+    for feature in features.sorted({ $0.slot < $1.slot }) {
+      
+    }
+  }
+  
+}
+
+
+
+struct Face {
+
+  struct Feature {
+
+    // The Int in this case may refer to the order in which layers are applied
+    enum Slot: Int {
+      case Head = 1
+      case Ear = 2
+      case Eye = 3
+      case Mouth = 4
+      case Nose = 5
+      case Beard = 6
+      case Hair = 7
+      case Decoration = 8
+    }
+
+    let slot: Slot
+    // These colours are to be set by the user. They're customisable.
+    let primaryColour: String?
+    let secondaryColour: String?
+    // Non-customisable colours are baked into the SVG template.
+    let svgTemplate: String
+
+    func svgLayer() -> String {
+      // Take the svgTemplate, replaced macros with colours, and you're done.
+      var svg = self.svgTemplate
+      if let colour = primaryColour {
+        svg.replaceInstancesOfString("%PRIMARY_COLOUR%", withString: colour)
+      }
+      if let colour = secondaryColour {
+        svg.replaceInstancesOfString("%SECONDARY_COLOUR%", withString: colour)
+      }
+      return svg
+    }
+
+  }
+  
+  let head: Feature?
+  let eye: Feature?
+  
+  init(recipe: String) {
+    // build up from a 'recipe' which could be JSON or could be something else
+  }
+  
+  init(head: Feature?, eye: Feature?) {
+    // build up from a series of features
+  }
+  
+  func svg() -> String {
+    // Create an empty SVG file and tack on each feature
+    
+  }
+
+}
+
+/*
+<html>
+  <head></head>
+  <body style='background-color: #eee'>
+    <svg version='1.1' xmlns='http://www.w3.org/2000/svg' style='width: 100px; height: 100px;'>
+      <defs>
+        <!-- Stylesheet -->
+        <style type='text/css'><![CDATA[
+          .field {
+            fill: white;
+          }
+        ]]></style>
+        
+        <!-- Clip the logo to a shape -->
+        <clipPath id='clip-circle'>
+          <circle cx='50' cy='50' r='50' />
+        </clipPath>
+        <clipPath id='clip-shield'>
+          <path d='M 0 0 L 100 0 C 100 100, 50 100, 50 100 C 50 100, 0 100, 0 0' />
+        </clipPath>
+        
+        <!-- Drop shadow -->
+        <filter id='drop-shadow' x='0' y='0' width='100%' height='100%'>
+          <feOffset result='offOut' in='SourceAlpha' dx='0' dy='0' />
+          <feGaussianBlur result='blurOut' in='offOut' stdDeviation='1' />
+          <feBlend in='SourceGraphic' in2='blurOut' mode='normal' />
+        </filter>
+      </defs>
+      
+      <!-- The logo itself -->
+      <!-- <g filter='url(#drop-shadow)'> -->
+        <g clip-path='url(#clip-circle)'>
+          <!-- Background colour -->
+          <rect class='field' x='0' y='0' width='100' height='100'/>
+          <!-- A cross -->
+          <!-- <polygon fill='blue' points='0 40, 0 60, 40 60, 40 100, 60 100, 60 60, 100 60, 100 40, 60 40, 60 0, 40 0, 40 40' /> -->
+          <!-- A bend -->
+          <polygon fill='yellow' points='0 10, 90 100, 100 90, 10 0'/>
+          
+          <!-- Text! -->
+          <!-- <text x='50' y='10' text-anchor='middle'>Hello world</text> -->
+        </g>
+      <!-- </g> -->
+      
+      
+      <!-- <circle cx='50' cy='50' r='40' stroke='green' stroke-width='4' fill='yellow' /> -->
+    </svg>
+  </body>
+</body>
+*/

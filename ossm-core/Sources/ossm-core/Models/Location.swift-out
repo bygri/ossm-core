@@ -1,0 +1,103 @@
+import Foundation
+
+/**
+CREATE TABLE location (
+  identifier VARCHAR(40) NOT NULL,
+  level1Id INT UNSIGNED NOT NULL,
+  level2Id INT UNSIGNED NOT NULL,
+  level3Id INT UNSIGNED NOT NULL,
+  level4Id INT UNSIGNED NOT NULL
+);
+CREATE UNIQUE INDEX location_id ON location(level1Id, level2Id, level3Id, level4Id);
+*/
+
+class Location {
+
+  let level1Id: Int
+  let level2Id: Int?
+  let level3Id: Int?
+  let level4Id: Int?
+  let identifier: String // the 'name' for translation
+  
+  public init?(row: SQLite.Result.Row) {
+    guard let
+      identifier = row.fields["identifier"],
+      level1IdStr = row.fields["level1Id"], level1Id = Int(level1IdStr)
+    else {
+      return nil
+    }
+    self.identifier = identifier
+    self.level1Id = level1Id
+    if let str = row.fields["level2Id"], int = Int(str) {
+      self.level2Id = int
+    }
+    if let str = row.fields["level3Id"], int = Int(str) {
+      self.level3Id = int
+    }
+    if let str = row.fields["level4Id"], int = Int(str) {
+      self.level4Id = int
+    }
+  }
+
+  public static func all(db: SQLite) -> [User] {
+    do {
+      let rows = try db.execute("SELECT * FROM location;")
+      let locations = rows.flatMap { Location(row: $0) }
+      return locations
+    } catch SQLiteError.SQL(let code, let message) {
+      print("SQL error: \(code) \(message)")
+    } catch {
+      print("Some error")
+    }
+    return []
+  }
+
+  public static func get(db: SQLite, level1Id: Int, level2Id: Int?, level3Id: Int?, level4Id: Int?) -> Location? {
+    let query: String = {
+      switch (level1Id, level2Id, level3Id, level4Id) {
+        case (a, nil, nil, nil):
+          return "SELECT * FROM location WHERE level1Id = \(a), level2Id IS NULL, level3Id IS NULL, level4Id IS NULL;"
+        case (a, b, nil, nil):
+          return "SELECT * FROM location WHERE level1Id = \(a), level2Id = \(b), level3Id IS NULL, level4Id IS NULL;"
+        case (a, b, c, nil):
+          return "SELECT * FROM location WHERE level1Id = \(a), level2Id = \(b), level3Id = \(c), level4Id IS NULL;"
+        case (a, b, c, d):
+          return "SELECT * FROM location WHERE level1Id = \(a), level2Id = \(b), level3Id = \(c), level4Id = \(d);"
+      }
+      return []
+    }()
+    do {
+      let row = try db.execute(query)
+      let location = Location(row: row)
+      return location
+    } catch SQLiteError.SQL(let code, let message) {
+      print("SQL error: \(code) \(message)")
+    } catch {
+      print("Some error")
+    }
+    return nil
+  }
+
+  // if only level1 is set, then this is a region, the parent is World
+  // if level1 and level2 are set, then this is a country, the parent is level1
+  // if levels 1-3 are set, then this is a state/county, the parent is level2
+  // if levels 1-4 are set, then this is a city, the parent is level3
+  // no other combination is permissible
+  public func getParent() -> Location? {
+    return nil
+  }
+  var parentLocationId: Int? {
+  // this is useless
+    get {
+      if level4Id != nil {
+        parentLocationId = level3Id
+      } else if level3Id != nil {
+        parentLocationId = level2Id
+      } else if level2Id != nil {
+        parentLocationId = level1Id
+      }
+      return nil
+    }
+  }
+
+}
