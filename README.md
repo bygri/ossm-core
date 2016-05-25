@@ -12,24 +12,9 @@ must be stored in a Postgresql database.
 
 ### Postgres
 
-Create a database and import the following SQL:
-
-    CREATE TABLE "users" (
-      "password" varchar(128) NOT NULL,
-      "last_login" timestamp with time zone NULL,
-      "pk" serial NOT NULL PRIMARY KEY,
-      "is_active" boolean NOT NULL,
-      "email" varchar(255) NOT NULL UNIQUE,
-      "nickname" varchar(40) NOT NULL UNIQUE,
-      "timezone_name" varchar(40) NOT NULL,
-      "language_code" varchar(6) NOT NULL,
-      "token" varchar(20) NOT NULL UNIQUE,
-      "face_recipe" varchar(255) NOT NULL,
-      "access_level" smallint NOT NULL CHECK ("access_level" >= 0)
-    );
-    CREATE INDEX "users_email" ON "users" ("email" varchar_pattern_ops);
-    CREATE INDEX "users_nickname" ON "users" ("nickname" varchar_pattern_ops);
-    CREATE INDEX "users_token" ON "users" ("token" varchar_pattern_ops);
+Create a database and import the file ``create.sql`` in the root of the repo.
+You will also want to populate the database with some fixtures, such as
+Locations.
 
 ### ossm-core
 
@@ -55,7 +40,8 @@ config file should be in JSON format resembling this:
 ### ossm-web
 
 Create the file ``ossm-web/ossm/local_settings.py`` using the header of
-``settings.py`` as a guide, then run the project.
+``settings.py`` as a guide, run ``manage.py migrate`` to create Django's
+tables, then you can run the web server.
     
 ## Contributing
 

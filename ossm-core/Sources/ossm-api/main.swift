@@ -58,6 +58,13 @@ do {
 }
 
 
+// Verify game environment.
+if Location.getRoot() == nil {
+  log("There is no root Location found in the database.", level: .Error)
+  exit(1)
+}
+
+
 // Configure and start server
 do {
   if let
