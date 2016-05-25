@@ -4,9 +4,12 @@ import XCTest
 
 class LocationTests: XCTestCase {
 
+  override func setUp() {
+    setLogLevel(.Debug)
+  }
+
   func createTable(populate: Bool) {
-    try! db().execute("DROP TABLE IF EXISTS locations")
-    try! db().execute("CREATE TABLE locations (pk serial NOT NULL PRIMARY KEY, parent_pk INT REFERENCES locations(pk), name varchar(40) NOT NULL)")
+    prepareTestDatabase()
     if populate { populateTable() }
   }
   
@@ -28,13 +31,8 @@ class LocationTests: XCTestCase {
 //     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES (x, y, 'z')")
   }
 
-  override func setUp() {
-    setLogLevel(.Debug)
-    try! configureDatabase(host: "127.0.0.1", port: 5432, username: "ossm", password: "abracadabra", databaseName: "ossm-test")
-  }
-  
   func testSQLInsertInvalidLocation() {
-    createTable(populate: false)
+    prepareTestDatabase()
     do {
       try db().execute("INSERT INTO locations (parent_pk, name) VALUES (99, 'Australia')")
       XCTFail()
@@ -42,10 +40,11 @@ class LocationTests: XCTestCase {
   }
   
   func testAddRootLocation() {
-    createTable(populate: false)
+    prepareTestDatabase()
     XCTAssertNil(Location.getRoot())
     do {
-      try Location.addRoot(withName: "Mars")
+      let root = try Location.addRoot(withName: "Mars")
+      XCTAssertEqual(root?.name, "Mars")
       XCTAssertEqual(Location.getRoot()?.name, "Mars")
     } catch {
       XCTFail()
@@ -62,7 +61,8 @@ class LocationTests: XCTestCase {
   }
   
   func testAddLocation() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     guard let rootLocation = Location.getRoot() else {
       XCTFail("No root location defined")
       return
@@ -77,7 +77,8 @@ class LocationTests: XCTestCase {
   }
   
   func testAddDuplicateLocation() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     do {
       try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
       try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 2,  1, 'Oceania')")
@@ -86,17 +87,20 @@ class LocationTests: XCTestCase {
   }
 
   func testFindRootLocation() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     XCTAssertEqual(Location.getRoot()?.name, "World")
   }
 
   func testFindNonExistentLocation() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     XCTAssertNil(Location.get(withPk: 99))
   }
   
   func testFindParent() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     let level4 = Location.get(withPk: 6)
     XCTAssertNotNil(level4)
     let level3 = level4?.getParent()
@@ -111,7 +115,8 @@ class LocationTests: XCTestCase {
   }
   
   func testFindParents() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     let location = Location.get(withPk: 10)
     XCTAssertNotNil(location)
     let parents = location?.getParents()
@@ -123,7 +128,8 @@ class LocationTests: XCTestCase {
   }
   
   func testFindChildren() {
-    createTable(populate: true)
+    prepareTestDatabase()
+    populateTable()
     // Simple progression
     let level0 = Location.getRoot()
     XCTAssertEqual(level0?.name, "World")

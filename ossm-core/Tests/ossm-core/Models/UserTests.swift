@@ -4,6 +4,10 @@ import XCTest
 
 class UserTests: XCTestCase {
 
+  override func setUp() {
+    setLogLevel(.Debug)
+  }
+
   func testAuthToken() {
     // Init with a valid token string
     XCTAssertNotNil(

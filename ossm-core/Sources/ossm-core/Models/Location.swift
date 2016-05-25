@@ -130,16 +130,24 @@ extension Location {
   /**
   Add a root location to the database.
   */
-  public static func addRoot(withName name: String) throws {
+  public static func addRoot(withName name: String) throws -> Location? {
     if Location.getRoot() != nil { throw Error.RootAlreadyExists }
-    try db().execute("INSERT INTO locations (parent_pk, name) VALUES (NULL, %@)", parameters: name)
+    let result = try db().execute("INSERT INTO locations (parent_pk, name) VALUES (NULL, %@) RETURNING *", parameters: name)
+    if let row = result.first {
+      return Location(row: row)
+    }
+    return nil
   }
   
   /**
   Add a location as a child of this location to the database.
   */
-  public func insertChild(withName name: String) throws {
-    try db().execute("INSERT INTO locations (parent_pk, name) VALUES (%@, %@)", parameters: pk, name)
+  public func insertChild(withName name: String) throws -> Location? {
+    let result = try db().execute("INSERT INTO locations (parent_pk, name) VALUES (%@, %@) RETURNING *", parameters: pk, name)
+    if let row = result.first {
+      return Location(row: row)
+    }
+    return nil
   }
   
 }

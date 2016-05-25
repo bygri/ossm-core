@@ -2,7 +2,7 @@ import Foundation
 import SQL
 
 
-public class User {
+public struct User {
 
   public struct AuthToken {
     private var str: String
@@ -76,7 +76,7 @@ public class User {
 extension User {
 
   // Create a User from an SQL.Row
-  public convenience init?(row: Row) {
+  public init?(row: Row) {
     do {
       guard let
         pk: Int = try row.value("pk"),
@@ -95,6 +95,15 @@ extension User {
     } catch {
       return nil
     }
+  }
+  
+  public static func create(withEmail email: String, password: String, authToken: AuthToken, timezoneName: String, language: Language, isActive: Bool, nickname: String, faceRecipe: String, accessLevel: AccessLevel) throws -> User? {
+    let result = try db().execute("INSERT INTO users (email, password, token, timezone_name, language_code, is_active, nickname, face_recipe, access_level, last_login) VALUES (%@, %@, %@, %@, %@, %@, %@, %@, %@, NULL) RETURNING *",
+      parameters: email, password, authToken.stringValue, timezoneName, language.rawValue, isActive ? "t" : "f", nickname, faceRecipe, accessLevel.rawValue)
+    if let row = result.first {
+      return User(row: row)
+    }
+    return nil
   }
 
   // Return all Users

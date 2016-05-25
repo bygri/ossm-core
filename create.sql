@@ -24,3 +24,15 @@ CREATE TABLE locations (
   parent_pk INT REFERENCES locations(pk),
   name varchar(40) NOT NULL
 );
+
+--CLUB
+CREATE TABLE clubs (
+  pk serial NOT NULL PRIMARY KEY,
+  user_pk int NOT NULL REFERENCES users(pk), -- intentionally not unique, just in case multi-clubs happens later
+  location_pk int NOT NULL REFERENCES locations(pk),
+  name varchar(80) NOT NULL,
+  badge_recipe varchar(255) NOT NULL,
+  primary_colour varchar(6) NOT NULL,
+  secondary_colour varchar(6) NOT NULL,
+  tertiary_colour varchar(6) NOT NULL
+);
