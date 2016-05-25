@@ -4,11 +4,13 @@ import XCTest
 
 class LocationTests: XCTestCase {
 
-  override func setUp() {
-    setLogLevel(.Debug)
-    try! configureDatabase(host: "127.0.0.1", port: 5432, username: "ossm", password: "abracadabra", databaseName: "ossm-test")
+  func createTable(populate: Bool) {
     try! db().execute("DROP TABLE IF EXISTS locations")
-    try! db().execute("CREATE TABLE locations (pk serial NOT NULL PRIMARY KEY, parent_pk INT, name varchar(40) NOT NULL)")
+    try! db().execute("CREATE TABLE locations (pk serial NOT NULL PRIMARY KEY, parent_pk INT REFERENCES locations(pk), name varchar(40) NOT NULL)")
+    if populate { populateTable() }
+  }
+  
+  func populateTable() {
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 2,  1, 'Oceania')")
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 3,    2, 'Australia')")
@@ -22,10 +24,60 @@ class LocationTests: XCTestCase {
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES (11,      3, 'Queensland')")
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES (12,    2, 'New Zealand')")
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES (13,  1, 'Europe')")
+    try! db().execute("SELECT setval('locations_pk_seq', max(pk)) from locations") // reset PK
 //     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES (x, y, 'z')")
+  }
+
+  override func setUp() {
+    setLogLevel(.Debug)
+    try! configureDatabase(host: "127.0.0.1", port: 5432, username: "ossm", password: "abracadabra", databaseName: "ossm-test")
+  }
+  
+  func testSQLInsertInvalidLocation() {
+    createTable(populate: false)
+    do {
+      try db().execute("INSERT INTO locations (parent_pk, name) VALUES (99, 'Australia')")
+      XCTFail()
+    } catch { }
+  }
+  
+  func testAddRootLocation() {
+    createTable(populate: false)
+    XCTAssertNil(Location.getRoot())
+    do {
+      try Location.addRoot(withName: "Mars")
+      XCTAssertEqual(Location.getRoot()?.name, "Mars")
+    } catch {
+      XCTFail()
+    }
+    // Try adding a second one
+    do {
+      try Location.addRoot(withName: "Venus")
+      XCTFail("Adding a second root should fail")
+    } catch Location.Error.RootAlreadyExists {
+      // Good stuff
+    } catch {
+      XCTFail("Wrong exception thrown")
+    }
+  }
+  
+  func testAddLocation() {
+    createTable(populate: true)
+    guard let rootLocation = Location.getRoot() else {
+      XCTFail("No root location defined")
+      return
+    }
+    let childCount = rootLocation.getChildren().count
+    do {
+      try rootLocation.insertChild(withName: "Asia")
+    } catch let error {
+      XCTFail("Insert child failed with \(error)")
+    }
+    XCTAssertEqual(rootLocation.getChildren().count, childCount+1)
   }
   
   func testAddDuplicateLocation() {
+    createTable(populate: true)
     do {
       try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
       try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 2,  1, 'Oceania')")
@@ -34,14 +86,17 @@ class LocationTests: XCTestCase {
   }
 
   func testFindRootLocation() {
+    createTable(populate: true)
     XCTAssertEqual(Location.getRoot()?.name, "World")
   }
 
   func testFindNonExistentLocation() {
+    createTable(populate: true)
     XCTAssertNil(Location.get(withPk: 99))
   }
   
   func testFindParent() {
+    createTable(populate: true)
     let level4 = Location.get(withPk: 6)
     XCTAssertNotNil(level4)
     let level3 = level4?.getParent()
@@ -56,6 +111,7 @@ class LocationTests: XCTestCase {
   }
   
   func testFindParents() {
+    createTable(populate: true)
     let location = Location.get(withPk: 10)
     XCTAssertNotNil(location)
     let parents = location?.getParents()
@@ -67,6 +123,7 @@ class LocationTests: XCTestCase {
   }
   
   func testFindChildren() {
+    createTable(populate: true)
     // Simple progression
     let level0 = Location.getRoot()
     XCTAssertEqual(level0?.name, "World")
@@ -93,6 +150,9 @@ class LocationTests: XCTestCase {
 extension LocationTests {
   static var allTests : [(String, LocationTests -> () throws -> Void)] {
     return [
+      ("testSQLInsertInvalidLocation", testSQLInsertInvalidLocation),
+      ("testAddRootLocation", testAddRootLocation),
+      ("testAddLocation", testAddLocation),
       ("testAddDuplicateLocation", testAddDuplicateLocation),
       ("testFindRootLocation", testFindRootLocation),
       ("testFindNonExistentLocation", testFindNonExistentLocation),

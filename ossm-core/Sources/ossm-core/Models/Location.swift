@@ -26,6 +26,10 @@ public struct Location {
 
 
 extension Location {
+
+  public enum Error: ErrorProtocol {
+    case RootAlreadyExists
+  }
   
   public init?(row: Row) {
     do {
@@ -113,16 +117,22 @@ extension Location {
   /**
   Return an array of child Locations in no particular order.
   */
-//   public func getChildren() -> [Location] {
   public func getChildren() -> Set<Location> {
     do {
       let rows = try db().execute("SELECT * FROM locations WHERE parent_pk = %@", parameters: pk)
-//       return rows.flatMap { Location(row: $0) }
       return Set(rows.flatMap { Location(row: $0) })
     } catch {
       log("SQL error: \(db().mostRecentError)")
     }
-    return []
+    return Set()
+  }
+  
+  /**
+  Add a root location to the database.
+  */
+  public static func addRoot(withName name: String) throws {
+    if Location.getRoot() != nil { throw Error.RootAlreadyExists }
+    try db().execute("INSERT INTO locations (parent_pk, name) VALUES (NULL, %@)", parameters: name)
   }
   
   /**

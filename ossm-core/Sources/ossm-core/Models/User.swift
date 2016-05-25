@@ -48,9 +48,9 @@ public class User {
   public var email: String
 //   public var password: String // This is not readable
   public var token: AuthToken
-  public var timezoneName: String // column "timezone_name"
-  public var language: Language // column "language_code"
-  public var isActive: Bool // column "is_active"
+  public var timezoneName: String
+  public var language: Language
+  public var isActive: Bool
   public var nickname: String
   public var faceRecipe: String
   public var accessLevel: AccessLevel
@@ -68,32 +68,6 @@ public class User {
     self.accessLevel = accessLevel
     self.lastLogin = lastLogin
   }
-
-  /*public init?(row: Row) {
-    guard let
-      pkStr = row.fields["pk"], pk = Int(pkStr),
-      email = row.fields["email"],
-      tokenString = row.fields["token"], token = AuthToken(string: tokenString),
-      timezoneName = row.fields["timezone_name"],
-      languageStr = row.fields["language_code"], language = Language(rawValue: languageStr),
-      isActiveString = row.fields["is_active"], isActiveInt = Int(isActiveString),
-      nickname = row.fields["nickname"],
-      faceRecipe = row.fields["face_recipe"],
-      accessLevelString = row.fields["access_level"], accessLevelUInt = UInt(accessLevelString), accessLevel = AccessLevel(rawValue: accessLevelUInt)
-    else {
-      return nil
-    }
-    self.pk = pk
-    self.email = email
-    self.token = token
-    self.timezoneName = timezoneName
-    self.language = language
-    self.isActive = /*isActive*/ isActiveInt == 1
-    self.nickname = nickname
-    self.faceRecipe = faceRecipe
-    self.accessLevel = accessLevel
-    // self.lastLogin = row.fields["last_login"]
-  }*/
 
 }
 
