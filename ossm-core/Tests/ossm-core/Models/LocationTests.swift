@@ -12,7 +12,7 @@ class LocationTests: XCTestCase {
     prepareTestDatabase()
     if populate { populateTable() }
   }
-  
+
   func populateTable() {
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
     try! db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 2,  1, 'Oceania')")
@@ -38,7 +38,18 @@ class LocationTests: XCTestCase {
       XCTFail()
     } catch { }
   }
-  
+
+  func testSQLInsertDuplicateLocation() {
+    prepareTestDatabase()
+    populateTable()
+    do {
+      try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
+      try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 2,  1, 'Oceania')")
+      XCTFail("Should not succeed")
+    } catch {}
+  }
+
+
   func testAddRootLocation() {
     prepareTestDatabase()
     XCTAssertNil(Location.getRoot())
@@ -59,7 +70,7 @@ class LocationTests: XCTestCase {
       XCTFail("Wrong exception thrown")
     }
   }
-  
+
   func testAddLocation() {
     prepareTestDatabase()
     populateTable()
@@ -67,23 +78,13 @@ class LocationTests: XCTestCase {
       XCTFail("No root location defined")
       return
     }
-    let childCount = rootLocation.getChildren().count
+    let childCount = rootLocation.getChildren(recursively: false).count
     do {
       try rootLocation.insertChild(withName: "Asia")
     } catch let error {
       XCTFail("Insert child failed with \(error)")
     }
-    XCTAssertEqual(rootLocation.getChildren().count, childCount+1)
-  }
-  
-  func testAddDuplicateLocation() {
-    prepareTestDatabase()
-    populateTable()
-    do {
-      try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
-      try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 2,  1, 'Oceania')")
-      XCTFail("Should not succeed")
-    } catch {}
+    XCTAssertEqual(rootLocation.getChildren(recursively: false).count, childCount+1)
   }
 
   func testFindRootLocation() {
@@ -97,7 +98,7 @@ class LocationTests: XCTestCase {
     populateTable()
     XCTAssertNil(Location.get(withPk: 99))
   }
-  
+
   func testFindParent() {
     prepareTestDatabase()
     populateTable()
@@ -113,7 +114,7 @@ class LocationTests: XCTestCase {
     XCTAssertEqual(level0?.name, "World")
     XCTAssertNil(level0?.getParent())
   }
-  
+
   func testFindParents() {
     prepareTestDatabase()
     populateTable()
@@ -126,28 +127,42 @@ class LocationTests: XCTestCase {
     }
     XCTAssertEqual(parentPks, [9, 3, 2, 1], "Parent PKs should be the PK of each parent in reverse order.")
   }
-  
+
   func testFindChildren() {
     prepareTestDatabase()
     populateTable()
     // Simple progression
     let level0 = Location.getRoot()
     XCTAssertEqual(level0?.name, "World")
-    XCTAssertEqual(level0?.getChildren().count, 2)
-    let level1 = level0?.getChildren().filter({ $0.name == "Oceania" }).first
+    XCTAssertEqual(level0?.getChildren(recursively: false).count, 2)
+    let level1 = level0?.getChildren(recursively: false).filter({ $0.name == "Oceania" }).first
     XCTAssertNotNil(level1)
-    XCTAssertEqual(level1?.getChildren().count, 2)
-    let level2 = level1?.getChildren().filter({ $0.name == "Australia" }).first
+    XCTAssertEqual(level1?.getChildren(recursively: false).count, 2)
+    let level2 = level1?.getChildren(recursively: false).filter({ $0.name == "Australia" }).first
     XCTAssertNotNil(level2)
-    XCTAssertEqual(level2?.getChildren().count, 3)
-    let level3 = level2?.getChildren().filter({ $0.name == "New South Wales" }).first
+    XCTAssertEqual(level2?.getChildren(recursively: false).count, 3)
+    let level3 = level2?.getChildren(recursively: false).filter({ $0.name == "New South Wales" }).first
     XCTAssertNotNil(level3)
-    XCTAssertEqual(level3?.getChildren().count, 4)
-    let level4 = level3?.getChildren().filter({ $0.name == "Sydney" }).first
+    XCTAssertEqual(level3?.getChildren(recursively: false).count, 4)
+    let level4 = level3?.getChildren(recursively: false).filter({ $0.name == "Sydney" }).first
     XCTAssertNotNil(level4)
-    XCTAssertEqual(level4?.getChildren().count, 0)
+    XCTAssertEqual(level4?.getChildren(recursively: false).count, 0)
     // Now try a bad one
-    XCTAssertNil(level3?.getChildren().filter({ $0.name == "Europe" }).first)
+    XCTAssertNil(level3?.getChildren(recursively: false).filter({ $0.name == "Europe" }).first)
+  }
+
+  func testFindRecursiveChildren() {
+    prepareTestDatabase()
+    populateTable()
+    // Just testing memberships here
+    let parent = Location.get(withPk: 3) // Australia
+    let children = parent?.getChildren(recursively: true)
+    let childNames: Set<String> = Set(children?.map { $0.name } ?? [])
+    XCTAssertFalse(childNames.contains("Australia"))
+    XCTAssertTrue(childNames.contains("Sydney"))
+    XCTAssertTrue(childNames.contains("New South Wales"))
+    XCTAssertFalse(childNames.contains("Auckland"))
+    XCTAssertFalse(childNames.contains("Oceania"))
   }
 
 }
@@ -157,14 +172,15 @@ extension LocationTests {
   static var allTests : [(String, LocationTests -> () throws -> Void)] {
     return [
       ("testSQLInsertInvalidLocation", testSQLInsertInvalidLocation),
+      ("testSQLInsertDuplicateLocation", testSQLInsertDuplicateLocation),
       ("testAddRootLocation", testAddRootLocation),
       ("testAddLocation", testAddLocation),
-      ("testAddDuplicateLocation", testAddDuplicateLocation),
       ("testFindRootLocation", testFindRootLocation),
       ("testFindNonExistentLocation", testFindNonExistentLocation),
       ("testFindParent", testFindParent),
       ("testFindParents", testFindParents),
       ("testFindChildren", testFindChildren),
+      ("testFindRecursiveChildren", testFindRecursiveChildren),
     ]
   }
 }

@@ -11,17 +11,17 @@ CREATE TABLE "locations" (
 */
 
 public struct Location {
-  
+
   public let pk: Int
   let parentPk: Int?
   public let name: String
-  
+
   public init(pk: Int, parentPk: Int?, name: String) {
     self.pk = pk
     self.parentPk = parentPk
     self.name = name
   }
-  
+
 }
 
 
@@ -30,7 +30,7 @@ extension Location {
   public enum Error: ErrorProtocol {
     case RootAlreadyExists
   }
-  
+
   public init?(row: Row) {
     do {
       guard let
@@ -45,7 +45,7 @@ extension Location {
       return nil
     }
   }
-  
+
   public static func getRoot() -> Location? {
     do {
       let rows = try db().execute("SELECT * FROM locations WHERE parent_pk IS NULL")
@@ -61,7 +61,7 @@ extension Location {
     return nil
   }
 
-  
+
   public static func get(withPk pk: Int) -> Location? {
     do {
       let rows = try db().execute("SELECT * FROM locations WHERE pk = %@", parameters: pk)
@@ -76,7 +76,7 @@ extension Location {
     }
     return nil
   }
-  
+
   /**
   Return this Location's parent, or nil if this is a top-level location.
   */
@@ -95,38 +95,56 @@ extension Location {
     }
     return nil
   }
-  
+
   /**
   Return an Array of all parents, in reverse order.
   The first value in the array is the location's immediate parent; the second
   value is the parent's parent; and so on.
   */
   public func getParents() -> [Location] {
-    // TODO: use a recursive SQL query instead of getting Swift to make lots of calls
-    var parents: [Location] = []
-    var thisLocation: Location? = self
-    while thisLocation != nil {
-      thisLocation = thisLocation?.getParent()
-      if let loc = thisLocation {
-        parents.append(loc)
-      }
-    }
-    return parents
-  }
-  
-  /**
-  Return an array of child Locations in no particular order.
-  */
-  public func getChildren() -> Set<Location> {
+    if parentPk == nil { return [] }
     do {
-      let rows = try db().execute("SELECT * FROM locations WHERE parent_pk = %@", parameters: pk)
-      return Set(rows.flatMap { Location(row: $0) })
+      var queryString = "WITH RECURSIVE locations_rec(pk, name, parent_pk, depth) AS ( "
+      queryString += "SELECT p.pk, p.name, p.parent_pk, 1::INT AS depth FROM locations AS p WHERE p.pk = %@ "
+      queryString += "UNION ALL "
+      queryString += "SELECT l.pk, l.name, l.parent_pk, p.depth + 1 AS depth FROM locations_rec AS p, locations as l WHERE l.pk = p.parent_pk "
+      queryString += ") "
+      queryString += "SELECT pk, name, parent_pk FROM locations_rec ORDER BY depth"
+      let rows = try db().execute(queryString, parameters: parentPk)
+      return rows.flatMap { Location(row: $0) }
+    } catch {
+      log("SQL error: \(db().mostRecentError)", level: .Error)
+    }
+    return []
+  }
+
+  /**
+  Return a set of child Locations, in no particular order.
+  If recursively is true, then the children's children and so on will also be included.
+  It's up to the caller to put the returned Locations into a useful order.
+  */
+  public func getChildren(recursively: Bool) -> Set<Location> {
+    do {
+      if !recursively {
+        let rows = try db().execute("SELECT * FROM locations WHERE parent_pk = %@", parameters: pk)
+        return Set(rows.flatMap { Location(row: $0) })
+      } else {
+        var queryString = "WITH RECURSIVE locations_rec(pk, name, parent_pk) AS ( "
+        queryString += "SELECT p.pk, p.name, p.parent_pk FROM locations AS p WHERE p.parent_pk = %@ "
+        queryString += "UNION ALL "
+        queryString += "SELECT l.pk, l.name, l.parent_pk FROM locations_rec AS p, locations as l WHERE l.parent_pk = p.pk "
+        queryString += ") "
+        queryString += "SELECT * FROM locations_rec"
+        let rows = try db().execute(queryString, parameters: pk)
+        return Set(rows.flatMap { Location(row: $0) })
+      }
     } catch {
       log("SQL error: \(db().mostRecentError)")
     }
     return Set()
   }
-  
+
+
   /**
   Add a root location to the database.
   */
@@ -138,7 +156,7 @@ extension Location {
     }
     return nil
   }
-  
+
   /**
   Add a location as a child of this location to the database.
   */
@@ -149,7 +167,7 @@ extension Location {
     }
     return nil
   }
-  
+
 }
 
 extension Location: Hashable {
@@ -159,7 +177,7 @@ extension Location: Hashable {
       return pk
     }
   }
-  
+
 }
 
 public func ==(lhs: Location, rhs: Location) -> Bool {
