@@ -28,7 +28,8 @@ CREATE TABLE locations (
 --CLUB
 CREATE TABLE clubs (
   pk serial NOT NULL PRIMARY KEY,
-  user_pk int NOT NULL REFERENCES users(pk), -- intentionally not unique, just in case multi-clubs happens later
+  kind_code varchar(4) NOT NULL,
+  owner_user_pk int NOT NULL REFERENCES users(pk),
   location_pk int NOT NULL REFERENCES locations(pk),
   name varchar(80) NOT NULL,
   badge_recipe varchar(255) NOT NULL,
