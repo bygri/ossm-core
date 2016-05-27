@@ -1,11 +1,13 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render
 from django.utils import timezone
 import slackinviter
 
 
 def index_view(request):
-  return render(request, 'index.html')
+  login_form = AuthenticationForm()
+  return render(request, 'index.html', {'login_form': login_form})
 
 
 @login_required

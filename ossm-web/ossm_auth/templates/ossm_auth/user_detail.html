@@ -5,22 +5,24 @@
 {% block title %}User {{ profileUser.nickname }}{% endblock %}
 
 {% block content %}
-  <h1>{{ profileUser.nickname }}</h1>
-  <p>Local time {{ localTime|timezone:profileUser.timezoneName }}</p>
+  <div class='container'>
+    <h1>{{ profileUser.nickname }}</h1>
+    <p>Local time {{ localTime|timezone:profileUser.timezoneName }}</p>
 
-  {% if userIsMe %}
-  <p>{% trans "Things you can do next:" %}</p>
-  <ul>
-    <li>
-      {% trans "Join the <a href='https://ossm.slack.com'>Slack discussion</a>" %}
-      (if you haven't already, you will need to <a href='{% url "slack-invite" %}'>
-      get an invite</a>)
-    </li>
-    <li>
-      <a href='{% url "password_change" %}'>{% trans "Change your password" %}</a>
-    </li>
-    <li>
-      {% trans "That's about it really." %}
-    </li>
-  {% endif %}
+    {% if userIsMe %}
+    <p>{% trans "Things you can do next:" %}</p>
+    <ul>
+      <li>
+        {% trans "Join the <a href='https://ossm.slack.com'>Slack discussion</a>" %}
+        (if you haven't already, you will need to <a href='{% url "slack-invite" %}'>
+        get an invite</a>)
+      </li>
+      <li>
+        <a href='{% url "password_change" %}'>{% trans "Change your password" %}</a>
+      </li>
+      <li>
+        {% trans "That's about it really." %}
+      </li>
+    {% endif %}
+  </div>
 {% endblock %}

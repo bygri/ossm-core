@@ -22,7 +22,7 @@ public struct Club {
     case Private = "priv"
     /// A 'national team', or equivalent. One person is granted ownership and they may draw their players from all
     /// players born in that location (or sub-locations).
-    case LocationBased = "locn"
+    case Representative = "repr"
   }
 
   public let pk: Int
