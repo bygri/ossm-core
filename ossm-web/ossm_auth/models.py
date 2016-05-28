@@ -32,19 +32,21 @@ class User(AbstractBaseUser):
     Superuser = 99
 
   id = models.AutoField(primary_key=True, db_column='pk')
-  is_active = models.BooleanField(default=True)
   email = models.EmailField(max_length=255, unique=True)
-  nickname = models.CharField(max_length=40, unique=True)
-  timezone_name = models.CharField(max_length=40, choices=[(t, t) for t in pytz.common_timezones])
-  language_code = models.CharField(max_length=6, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE)
   token = models.CharField(max_length=20, unique=True)
-  face_recipe = models.CharField(max_length=255, blank=True)
+  verification_code = models.CharField(max_length=20, blank=True, null=True)
+  is_active = models.BooleanField(default=True)
   access_level = models.PositiveSmallIntegerField(default=AccessLevel.User.value, choices=(
     (AccessLevel.User.value, 'User'),
     (AccessLevel.Moderator.value, 'Moderator'),
     (AccessLevel.Administrator.value, 'Administrator'),
     (AccessLevel.Superuser.value, 'Superuser'),
   ))
+  nickname = models.CharField(max_length=40, unique=True)
+  timezone_name = models.CharField(max_length=40, choices=[(t, t) for t in pytz.common_timezones])
+  language_code = models.CharField(max_length=6, choices=settings.LANGUAGES, default=settings.LANGUAGE_CODE)
+  face_recipe = models.CharField(max_length=255, blank=True)
+  date_created = models.DateTimeField(auto_now_add=True)
 
   USERNAME_FIELD = 'email'
   REQUIRED_FIELDS = ['nickname', 'timezone_name', 'language_code']
@@ -68,6 +70,19 @@ class User(AbstractBaseUser):
     if not self.token:
       self.token = User.objects.make_random_password(length=20)
     super().save(*args, **kwargs)
+
+  def generate_verification_code(self):
+    self.verification_code = User.objects.make_random_password(length=20)
+    self.is_active = False
+    self.save()
+
+  def verify(self, code):
+    if code == self.verification_code:
+      self.verification_code = None
+      self.is_active = True
+      self.save()
+      return True
+    return False
 
   # django.contrib.admin
   @property

@@ -20,7 +20,9 @@
           {% if form.errors %}
           <div class='alert alert-warning'>
             We couldn't find a registered user in our system with that email and password. Please check your entry and
-            try again, or set up a new password using the link above.
+            try again, or set up a new password using the link above.<br>
+            Your account might also be waiting for email verification. If you signed up for an account in the last 24
+            hours, please check your emails.
           </div>
           {% endif %}
           <form class='form-horizontal' action='.' method='post'>
