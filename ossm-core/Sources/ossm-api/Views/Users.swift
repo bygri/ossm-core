@@ -2,6 +2,15 @@ import Vapor
 import ossmcore
 
 
+func userCreateView(_ request: Request) -> Response {
+  // POST. Create a user.
+  // do {
+  //   User.create(withEmail: email, password: password, timezoneName: timezoneName, language: language, nickname: nickname)
+  // }
+  return response("hi")
+}
+
+/*
 func userListView(_ request: Request) -> Response {
   let users = User.all().filter { $0.isActive == true }
   return response(Json(
@@ -20,13 +29,13 @@ func userListView(_ request: Request) -> Response {
     ] as [String: JsonRepresentable]
   ))
 }
-
+*/
 
 func userDetailView(request: Request, userPk: Int) -> Response {
   guard let myPk = authenticatedUserPk(fromRequest: request) else {
     return responseFail(reason: "Not authenticated")
   }
-  guard let user = User.get(withPk: userPk) else {
+  guard let user = try? User.get(withPk: userPk) else {
     return responseFail(reason: "User not found")
   }
   // If this is a different user, show summary info

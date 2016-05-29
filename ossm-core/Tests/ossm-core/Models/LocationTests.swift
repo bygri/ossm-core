@@ -6,11 +6,7 @@ class LocationTests: XCTestCase {
 
   override func setUp() {
     setLogLevel(.Debug)
-  }
-
-  func createTable(populate: Bool) {
     prepareTestDatabase()
-    if populate { populateTable() }
   }
 
   func populateTable() {
@@ -32,7 +28,6 @@ class LocationTests: XCTestCase {
   }
 
   func testSQLInsertInvalidLocation() {
-    prepareTestDatabase()
     do {
       try db().execute("INSERT INTO locations (parent_pk, name) VALUES (99, 'Australia')")
       XCTFail()
@@ -40,7 +35,6 @@ class LocationTests: XCTestCase {
   }
 
   func testSQLInsertDuplicateLocation() {
-    prepareTestDatabase()
     populateTable()
     do {
       try db().execute("INSERT INTO locations (pk, parent_pk, name) VALUES ( 1, NULL, 'World')")
@@ -51,7 +45,6 @@ class LocationTests: XCTestCase {
 
 
   func testAddRootLocation() {
-    prepareTestDatabase()
     XCTAssertNil(Location.getRoot())
     do {
       let root = try Location.addRoot(withName: "Mars")
@@ -72,7 +65,6 @@ class LocationTests: XCTestCase {
   }
 
   func testAddLocation() {
-    prepareTestDatabase()
     populateTable()
     guard let rootLocation = Location.getRoot() else {
       XCTFail("No root location defined")
@@ -88,19 +80,16 @@ class LocationTests: XCTestCase {
   }
 
   func testFindRootLocation() {
-    prepareTestDatabase()
     populateTable()
     XCTAssertEqual(Location.getRoot()?.name, "World")
   }
 
   func testFindNonExistentLocation() {
-    prepareTestDatabase()
     populateTable()
     XCTAssertNil(Location.get(withPk: 99))
   }
 
   func testFindParent() {
-    prepareTestDatabase()
     populateTable()
     let level4 = Location.get(withPk: 6)
     XCTAssertNotNil(level4)
@@ -116,7 +105,6 @@ class LocationTests: XCTestCase {
   }
 
   func testFindParents() {
-    prepareTestDatabase()
     populateTable()
     let location = Location.get(withPk: 10)
     XCTAssertNotNil(location)
@@ -129,7 +117,6 @@ class LocationTests: XCTestCase {
   }
 
   func testFindChildren() {
-    prepareTestDatabase()
     populateTable()
     // Simple progression
     let level0 = Location.getRoot()
@@ -152,7 +139,6 @@ class LocationTests: XCTestCase {
   }
 
   func testFindRecursiveChildren() {
-    prepareTestDatabase()
     populateTable()
     // Just testing memberships here
     let parent = Location.get(withPk: 3) // Australia

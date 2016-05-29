@@ -98,7 +98,7 @@ extension Club {
 
   public static func create(ofKind kind: Kind, forOwner user: User, inLocation location: Location, withName name: String, badgeRecipe: String, primaryColour: String, secondaryColour: String, tertiaryColour: String) throws -> Club? {
     // TODO: Validate colour. I think we need a utility Colour struct much like User.AuthToken, but separate to Club, which validates itself.
-    let result = try db().execute("INSERT INTO clubs (kind, owner_user_pk, location_pk, name, badge_recipe, primary_colour, secondary_colour, tertiary_colour) VALUES (%@, %@, %@, %@, %@, %@, %@, %@) RETURNING *",
+    let result = try db().execute("INSERT INTO clubs (kind_code, owner_user_pk, location_pk, name, badge_recipe, primary_colour, secondary_colour, tertiary_colour) VALUES (%@, %@, %@, %@, %@, %@, %@, %@) RETURNING *",
       parameters: kind.rawValue, user.pk, location.pk, name, badgeRecipe, primaryColour, secondaryColour, tertiaryColour)
       if let row = result.first {
         return Club(row: row)

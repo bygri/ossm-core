@@ -30,12 +30,14 @@ public func authenticatedUserPk(fromToken token: User.AuthToken) -> Int? {
   }
   // Failing this, load the data from the database.
   log("Not cached, fetching from database.", level: .Debug)
-  if let pk = User.getPk(forToken: token) {
-    // Store the token and pk in our cache
-    log("Caching fetched token for user \(pk)")
-    cache.setObject(NSNumber(integer: pk), forKey: NSString(string: token.stringValue), cost: 40)
-    return pk
-  }
+  do {
+    if let pk = try User.getPk(forAuthToken: token) {
+      // Store the token and pk in our cache
+      log("Caching fetched token for user \(pk)")
+      cache.setObject(NSNumber(integer: pk), forKey: NSString(string: token.stringValue), cost: 40)
+      return pk
+    }
+  } catch {}
   log("Invalid authentication token.", level: .Warn)
   return nil
 }

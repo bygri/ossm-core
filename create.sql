@@ -1,11 +1,12 @@
 --Django's migrate command must be run after importing this SQL to create its own tables.
 
 --USER
-CREATE TABLE IF NOT EXISTS users (
+DROP TABLE IF EXISTS users CASCADE;
+CREATE TABLE users (
   pk serial NOT NULL PRIMARY KEY,
   email varchar(255) NOT NULL UNIQUE,
   password varchar(128) NOT NULL,
-  token varchar(20) NOT NULL UNIQUE,
+  auth_token varchar(20) NOT NULL UNIQUE,
   verification_code varchar(20),
   is_active boolean NOT NULL,
   access_level smallint NOT NULL CHECK (access_level >= 0),
@@ -13,14 +14,15 @@ CREATE TABLE IF NOT EXISTS users (
   timezone_name varchar(40) NOT NULL,
   language_code varchar(6) NOT NULL,
   face_recipe varchar(255) NOT NULL,
-  date_created timestamp with time zone NULL,
-  last_login timestamp with time zone NULL
+  date_created timestamp with time zone NOT NULL,
+  last_login timestamp with time zone
 );
 CREATE INDEX users_email ON users (email varchar_pattern_ops);
 CREATE INDEX users_nickname ON users (nickname varchar_pattern_ops);
-CREATE INDEX users_token ON users (token varchar_pattern_ops);
+CREATE INDEX users_auth_token ON users (auth_token varchar_pattern_ops);
 
 --LOCATION
+DROP TABLE IF EXISTS locations CASCADE;
 CREATE TABLE locations (
   pk serial NOT NULL PRIMARY KEY,
   parent_pk INT REFERENCES locations(pk),
@@ -28,6 +30,7 @@ CREATE TABLE locations (
 );
 
 --CLUB
+DROP TABLE IF EXISTS clubs CASCADE;
 CREATE TABLE clubs (
   pk serial NOT NULL PRIMARY KEY,
   kind_code varchar(4) NOT NULL,

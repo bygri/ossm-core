@@ -33,3 +33,21 @@ public func db() -> Connection {
   }
   return db
 }
+
+
+private let _dateFormatter: NSDateFormatter = {
+  let df = NSDateFormatter()
+  df.dateFormat = "yyyy-MM-dd HH:mm:ssZ"
+  return df
+}()
+
+
+public func dbDateFromString(_ string: String) -> NSDate? {
+  return _dateFormatter.dateFromString(string)
+}
+public func dbStringFromDate(_ date: NSDate?) -> String? {
+  if let date = date {
+    return _dateFormatter.string(from: date)
+  }
+  return nil
+}
