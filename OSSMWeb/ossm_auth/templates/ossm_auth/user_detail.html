@@ -5,7 +5,8 @@
 {% block title %}User {{ profileUser.nickname }}{% endblock %}
 
 {% block content %}
-  <div class='container'>
+  <div class='container-fluid'>
+    <img src='https://randomuser.me/api/portraits/lego/{{ profileUser.pk }}.jpg' class='img-thumbnail' style='width: 200px; height: 200px;'>
     <h1>{{ profileUser.nickname }}</h1>
     <p>Local time {{ localTime|timezone:profileUser.timezoneName }}</p>
 

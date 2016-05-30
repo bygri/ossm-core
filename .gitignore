@@ -5,12 +5,12 @@ var
 bin
 .fuse_hidden*
 
-# ossm-web
+# OSSMWeb
 
 __pycache__
 local_settings.py
 
-# ossm-core
+# OSSMCore
 
 .build
 Packages

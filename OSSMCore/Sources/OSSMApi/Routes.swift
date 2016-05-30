@@ -1,5 +1,5 @@
 import Vapor
-import ossmcore
+import OSSMCore
 
 
 func configureRoutes() {

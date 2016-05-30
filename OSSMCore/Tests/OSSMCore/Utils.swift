@@ -1,6 +1,6 @@
 import Foundation
 import PureJson
-import ossmcore
+import OSSMCore
 
 
 private var _dbConfigured = false

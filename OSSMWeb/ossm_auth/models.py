@@ -71,18 +71,18 @@ class User(AbstractBaseUser):
       self.token = User.objects.make_random_password(length=20)
     super().save(*args, **kwargs)
 
-  def generate_verification_code(self):
-    self.verification_code = User.objects.make_random_password(length=20)
-    self.is_active = False
-    self.save()
-
-  def verify(self, code):
-    if code == self.verification_code:
-      self.verification_code = None
-      self.is_active = True
-      self.save()
-      return True
-    return False
+  # def generate_verification_code(self):
+  #   self.verification_code = User.objects.make_random_password(length=20)
+  #   self.is_active = False
+  #   self.save()
+  #
+  # def verify(self, code):
+  #   if code == self.verification_code:
+  #     self.verification_code = None
+  #     self.is_active = True
+  #     self.save()
+  #     return True
+  #   return False
 
   # django.contrib.admin
   @property

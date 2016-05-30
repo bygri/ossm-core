@@ -1,6 +1,6 @@
 import Foundation
 import PureJson
-import ossmcore
+import OSSMCore
 
 
 let VERSION = [0,0,1]

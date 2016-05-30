@@ -9,7 +9,7 @@
   the database, we'll need to purge this cache as well.
 */
 import Foundation
-import ossmcore
+import OSSMCore
 
 
 private let cache = NSCache()

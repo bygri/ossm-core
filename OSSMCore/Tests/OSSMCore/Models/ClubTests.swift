@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-@testable import ossmcore
+@testable import OSSMCore
 
 
 class ClubTests: XCTestCase {

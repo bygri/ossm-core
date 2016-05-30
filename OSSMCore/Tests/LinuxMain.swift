@@ -1,5 +1,5 @@
 import XCTest
-@testable import ossmcoreTestSuite
+@testable import OSSMCoreTestSuite
 
 XCTMain([
 	testCase(DBTests.allTests),

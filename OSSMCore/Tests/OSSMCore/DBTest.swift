@@ -1,5 +1,5 @@
 import XCTest
-@testable import ossmcore
+@testable import OSSMCore
 
 
 class DBTests: XCTestCase {
