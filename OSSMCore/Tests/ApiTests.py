@@ -4,6 +4,8 @@ Because Swift PM cannot test executables, the binary needs to be tested instead.
 Bonus: python-requests is very convenient for unit testing.
 
 https://bugs.swift.org/browse/SR-1503
+
+Secret key MUST be 'abracadabra' for getTestUser() to have the correct password set.
 '''
 import json
 import os
@@ -15,19 +17,6 @@ import time
 import unittest
 
 
-class TestApi(unittest.TestCase):
-
-  def setUp(self):
-    startApi()
-
-  def tearDown(self):
-    stopApi()
-
-  def test_hello(self):
-    r = requests.get(api_url).json()
-    self.assertEqual(r['response'], 'Hello from ossm-api.')
-
-
 class TestUserViews(unittest.TestCase):
 
   def setUp(self):
@@ -35,6 +24,149 @@ class TestUserViews(unittest.TestCase):
 
   def tearDown(self):
     stopApi()
+
+  def getTestUser(self):
+    cur = db.cursor()
+    cur.execute('''
+      INSERT INTO users
+      (email, password, auth_token, is_active, access_level, nickname, timezone_name, language_code, face_recipe, date_created)
+      VALUES
+      ('test@test.com', '06b8cc0b030d942ee8689e440413d2e63e141c220cfeea03c01c4c68f1b4d88e', 'ABCDEFabcdef12345678', TRUE, 1, 'testuser', 'Australia/Sydney', 'en-au', '', '2016-01-01 00:00:00+0000')
+      RETURNING pk, auth_token
+    ''')
+    row = cur.fetchone()
+    cur.close()
+    self.userPk = row[0]
+    self.userPassword = 'password'
+    self.userEmail = 'test@test.com'
+    self.authToken = row[1]
+
+
+  def test_view_user_detail(self):
+    self.getTestUser()
+    # Unauthenticated should return 401
+    r = requests.get(api_url+'/user/12345')
+    self.assertEqual(r.status_code, 401)
+    # Fetching a non-existing user should fail.
+    r = requests.get(api_url+'/user/12345', headers={'Authorization': self.authToken})
+    self.assertEqual(r.status_code, 404)
+    # Fetching an existing user should succeed
+    r = requests.get(api_url+'/user/{}'.format(self.userPk), headers={'Authorization': self.authToken})
+    self.assertEqual(r.status_code, 200)
+
+  def test_view_user_authenticate(self):
+    self.getTestUser()
+    r = requests.post(api_url+'/user/authenticate', data={'email': self.userEmail, 'password': self.userPassword})
+    self.assertEqual(r.status_code, 200)
+    self.assertEqual(r.json()['data']['authToken'], self.authToken)
+
+  def test_view_user_create(self):
+    email = 'test@user.com'
+    password = 'password'
+    r = requests.post(api_url+'/user/create', data={
+      'email': email,
+      'password': password,
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'testuser'
+    })
+    self.assertEqual(r.status_code, 201)
+
+  def test_view_user_create_duplicate(self):
+    email = 'test@user.com'
+    password = 'password'
+    r = requests.post(api_url+'/user/create', data={
+      'email': email,
+      'password': password,
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'testuser'
+    })
+    self.assertEqual(r.status_code, 201)
+    r = requests.post(api_url+'/user/create', data={
+      'email': email,
+      'password': password,
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'testuser'
+    })
+    self.assertEqual(r.status_code, 400)
+
+  def test_view_user_regenerate_token(self):
+    self.getTestUser()
+    # Attempt token regeneration (need the password)
+    r = requests.post(api_url+'/user/regenerateToken/{}'.format(self.userPk), data={'password': self.userPassword})
+    self.assertEqual(r.status_code, 200)
+    newToken = r.json()['data']['authToken']
+    self.assertNotEqual(self.authToken, newToken)
+    # Confirm the token has been changed
+    r = requests.get(api_url+'/user/{}'.format(self.userPk), headers={'Authorization': newToken})
+    self.assertEqual(r.json()['data']['authToken'], newToken)
+
+  def test_view_user_verify(self):
+    self.getTestUser()
+    # Create a user
+    email = 'test@user.com'
+    password = 'password'
+    r = requests.post(api_url+'/user/create', data={
+      'email': email,
+      'password': password,
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'test2'
+    })
+    self.assertEqual(r.status_code, 201)
+    pk = r.json()['data']['pk']
+    verification_code = r.json()['data']['verificationCode']
+    # Attempt verify with an incorrect code - should fail
+    r = requests.post(api_url+'/user/verify/{}'.format(pk), data={'code': 'invalid_code'})
+    self.assertEqual(r.status_code, 400)
+    # Fetch user - should fail
+    r = requests.get(api_url+'/user/{}'.format(pk), headers={'Authorization': self.authToken})
+    self.assertEqual(r.status_code, 404)
+    # Verify with a correct code
+    r = requests.post(api_url+'/user/verify/{}'.format(pk), data={'code': verification_code})
+    self.assertEqual(r.status_code, 204)
+    # Fetch user - should succeed
+    r = requests.get(api_url+'/user/{}'.format(pk), headers={'Authorization': self.authToken})
+    self.assertEqual(r.status_code, 200)
+
+  def test_signup_flow(self):
+    # Create a user
+    email = 'test@user.com'
+    password = 'password'
+    r = requests.post(api_url+'/user/create', data={
+      'email': email,
+      'password': password,
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'testuser'
+    })
+    self.assertEqual(r.status_code, 201)
+    pk = r.json()['data']['pk']
+    verification_code = r.json()['data']['verificationCode']
+    # Attempt auth - should fail
+    r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': password})
+    self.assertEqual(r.status_code, 401)
+    # Attempt auth with incorrect credentials - should fail
+    r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': 'wrongpassword'})
+    self.assertEqual(r.status_code, 401)
+    # Attempt verify with an incorrect code - should fail
+    r = requests.post(api_url+'/user/verify/{}'.format(pk), data={'code': 'invalid_code'})
+    self.assertEqual(r.status_code, 400)
+    # Attempt auth with incorrect credentials - should fail
+    r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': 'wrongpassword'})
+    self.assertEqual(r.status_code, 401)
+    # Verify with a correct code
+    r = requests.post(api_url+'/user/verify/{}'.format(pk), data={'code': verification_code})
+    self.assertEqual(r.status_code, 204)
+    # Attempt auth with incorrect credentials - should fail
+    r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': 'wrongpassword'})
+    self.assertEqual(r.status_code, 401)
+    # Attempt auth with correct credentials
+    r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': password})
+    self.assertEqual(r.status_code, 200)
+    authToken = r.json()['data']['authToken']
 
 
 ### Configuration rubbish
@@ -74,7 +206,7 @@ def configure(args):
   with open(os.path.expanduser(create_file_path)) as fp:
     _create_queries = fp.read().split(';')
   # Build API url
-  api_url = 'http://{}:{}/'.format(
+  api_url = 'http://{}:{}'.format(
     config['server']['host'], +config['server']['port']
   )
 

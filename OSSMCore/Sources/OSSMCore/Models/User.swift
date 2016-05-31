@@ -239,19 +239,21 @@ extension User {
   The User's account will be created inactive and a verification code will be generated.
   */
   public static func create(withEmail email: String, password: String, timezoneName: String, language: Language, nickname: String) throws -> User {
-    return try User.create(
-      withEmail: email,
-      password: password,
-      authToken: try AuthToken.generateUnique(),
-      verificationCode: AuthToken.generate().stringValue,
-      isActive: false,
-      accessLevel: AccessLevel.User,
-      nickname: nickname,
-      timezoneName: timezoneName,
-      language: language,
-      faceRecipe: "",
-      dateCreated: NSDate(),
-      lastLogin: nil)
+    do {
+      return try User.create(
+        withEmail: email,
+        password: password,
+        authToken: try AuthToken.generateUnique(),
+        verificationCode: AuthToken.generate().stringValue,
+        isActive: false,
+        accessLevel: AccessLevel.User,
+        nickname: nickname,
+        timezoneName: timezoneName,
+        language: language,
+        faceRecipe: "",
+        dateCreated: NSDate(),
+        lastLogin: nil)
+    }
   }
 
   /// Set user as not active and generate a verification code to reactivate.
@@ -270,14 +272,40 @@ extension User {
   }
 
   /**
-  Return true if the user's credentials are correct and the user is active.
+  Return a pk if the user's credentials are correct and the user is active.
   */
-  public static func authenticateUser(email: String, password: String) throws -> Bool {
+  public static func authenticateUser(withEmail email: String, password: String) throws -> Int? {
     let passwordHash = hashString(password)
-    if try db().execute("SELECT 1 FROM users WHERE email = %@ AND password = %@ AND is_active = TRUE", parameters: email, passwordHash).count == 1 {
-      return true
+    let result = try db().execute("SELECT pk FROM users WHERE email = %@ AND password = %@ AND is_active = TRUE", parameters: email, passwordHash)
+    if let row = result.first {
+      return try row.value("pk") as Int?
     }
-    return false
+    return nil
+  }
+
+  /**
+  Return a pk if the user's credentials are correct and the user is active.
+  */
+  public static func authenticateUser(withPk pk: Int, password: String) throws -> Int? {
+    let passwordHash = hashString(password)
+    let result = try db().execute("SELECT pk FROM users WHERE pk = %@ AND password = %@ AND is_active = TRUE", parameters: pk, passwordHash)
+    if let row = result.first {
+      return try row.value("pk") as Int?
+    }
+    return nil
+  }
+
+  /**
+  Recreates the User's auth token. Guaranteed to be new.
+  */
+  public func regenerateToken() throws -> User.AuthToken {
+    let oldToken = authToken
+    var newToken = authToken
+    while oldToken == newToken {
+      newToken = try User.AuthToken.generateUnique()
+    }
+    try db().execute("UPDATE users SET auth_token = %@ WHERE pk = %@", parameters: newToken.stringValue, pk)
+    return newToken
   }
 
 }

@@ -104,13 +104,13 @@ class UserTests: XCTestCase {
         return
       }
       // Attempt authentication - should fail.
-      XCTAssertFalse(
-        try User.authenticateUser(email: email, password: password),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: password),
         "Authenticating an inactive user should fail."
       )
       // Attempt authentication with incorrect credentials - should fail
-      XCTAssertFalse(
-        try User.authenticateUser(email: email, password: "thisisnotyourpassword"),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: "thisisnotyourpassword"),
         "Authenticating an inactive user with incorrect credentials should fail."
       )
       // Verify with an incorrect code.
@@ -119,8 +119,8 @@ class UserTests: XCTestCase {
         "Verifying a user with an incorrect code should fail."
       )
       // Attempt authentication - should fail.
-      XCTAssertFalse(
-        try User.authenticateUser(email: email, password: password),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: password),
         "Authenticating an inactive user who was then verified incorrectly should fail."
       )
       // Verify with a correct code
@@ -129,14 +129,14 @@ class UserTests: XCTestCase {
         "Verifying a user with a correct code should succeed."
       )
       // Attempt authentication with incorrect credentials - should fail
-      XCTAssertFalse(
-        try User.authenticateUser(email: email, password: "thisisnotyourpassword"),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: "thisisnotyourpassword"),
         "Authenticating an active user with incorrect credentials should fail."
       )
       // Attempt authentication - should succeed.
       print("pw \(password)")
-      XCTAssertTrue(
-        try User.authenticateUser(email: email, password: password),
+      XCTAssertNotNil(
+        try User.authenticateUser(withEmail: email, password: password),
         "Authenticating an active user with correct email and password should succeed."
       )
     } catch let error {
@@ -164,22 +164,22 @@ class UserTests: XCTestCase {
         lastLogin: nil
       )
       // Try authentication
-      XCTAssertFalse(
-        try User.authenticateUser(email: "notyouremail@email.com", password: password),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: "notyouremail@email.com", password: password),
         "Authenticating with incorrect email should fail."
       )
-      XCTAssertFalse(
-        try User.authenticateUser(email: email, password: "not your password"),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: "not your password"),
         "Authenticating with incorrect password should fail."
       )
-      XCTAssertTrue(
-        try User.authenticateUser(email: email, password: password),
+      XCTAssertNotNil(
+        try User.authenticateUser(withEmail: email, password: password),
         "Authenticating with correct credentials should succeed."
       )
       // Make user inactive
       try user.requireVerification()
-      XCTAssertFalse(
-        try User.authenticateUser(email: email, password: password),
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: password),
         "Authenticating inactive user should fail."
       )
     } catch let error {
@@ -224,6 +224,37 @@ class UserTests: XCTestCase {
     }
   }
 
+  func testRegenerateToken() {
+    do {
+      // Create an active user.
+      let email = "test@test.com"
+      let password = "apassword"
+      var user = try User.create(
+        withEmail: email,
+        password: password,
+        authToken: try User.AuthToken.generateUnique(),
+        verificationCode: nil,
+        isActive: true,
+        accessLevel: User.AccessLevel.User,
+        nickname: "testuser",
+        timezoneName: "Australia/Sydney",
+        language: Language.Australian,
+        faceRecipe: "",
+        dateCreated: NSDate(),
+        lastLogin: nil
+      )
+      let oldToken = user.authToken
+      let newTokenReturned = try user.regenerateToken()
+      user = try User.get(withPk: user.pk)
+      let newTokenRetrieved = user.authToken
+      XCTAssertNotEqual(oldToken, newTokenReturned)
+      XCTAssertNotEqual(oldToken, newTokenRetrieved)
+      XCTAssertEqual(newTokenReturned, newTokenRetrieved)
+    } catch let error {
+      XCTFail("\(error)")
+    }
+  }
+
 }
 
 
@@ -239,6 +270,7 @@ extension UserTests {
       ("testSignupFlow", testSignupFlow),
       ("testAuthentication", testAuthentication),
       ("testVerification", testVerification),
+      ("testRegenerateToken", testRegenerateToken),
     ]
   }
 }

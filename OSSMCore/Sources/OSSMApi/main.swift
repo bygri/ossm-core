@@ -55,6 +55,16 @@ do {
   log("Database connection succeeded.")
 } catch {
   log("Failed opening database", level: .Error)
+  exit(1)
+}
+
+
+// Configure hash
+if let secretKey = config["secretKey"]?.string {
+  configureHash(withKey: secretKey)
+} else {
+  log("No secret key!", level: .Error)
+  exit(1)
 }
 
 
