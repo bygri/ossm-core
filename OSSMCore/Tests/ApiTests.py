@@ -54,11 +54,13 @@ class TestUserViews(unittest.TestCase):
     r = requests.get(api_url+'/user/{}'.format(self.userPk), headers={'Authorization': self.authToken})
     self.assertEqual(r.status_code, 200)
 
+
   def test_view_user_authenticate(self):
     self.getTestUser()
     r = requests.post(api_url+'/user/authenticate', data={'email': self.userEmail, 'password': self.userPassword})
     self.assertEqual(r.status_code, 200)
     self.assertEqual(r.json()['data']['authToken'], self.authToken)
+
 
   def test_view_user_create(self):
     email = 'test@user.com'
@@ -71,6 +73,37 @@ class TestUserViews(unittest.TestCase):
       'nickname': 'testuser'
     })
     self.assertEqual(r.status_code, 201)
+    
+  def test_view_user_create_invalid(self):
+    # Invalid email
+    r = requests.post(api_url+'/user/create', data={
+      'email': 'notanemail',
+      'password': 'password',
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'invalidemail'
+    })
+    print(r)
+    self.assertEqual(r.status_code, 400)
+    # Invalid language
+    r = requests.post(api_url+'/user/create', data={
+      'email': 'test2@user.com',
+      'password': 'password',
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'martian',
+      'nickname': 'invalidlanguage'
+    })
+    self.assertEqual(r.status_code, 400)
+    # Invalid nickname
+    r = requests.post(api_url+'/user/create', data={
+      'email': 'test3@user.com',
+      'password': 'password',
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
+      'nickname': 'Not%a$valid@nickname'
+    })
+    self.assertEqual(r.status_code, 400)
+
 
   def test_view_user_create_duplicate(self):
     email = 'test@user.com'
@@ -88,9 +121,18 @@ class TestUserViews(unittest.TestCase):
       'password': password,
       'timezoneName': 'Australia/Melbourne',
       'language': 'en-au',
+      'nickname': 'duplicateemail'
+    })
+    self.assertEqual(r.status_code, 400)
+    r = requests.post(api_url+'/user/create', data={
+      'email': 'duplicate@nickname.com',
+      'password': password,
+      'timezoneName': 'Australia/Melbourne',
+      'language': 'en-au',
       'nickname': 'testuser'
     })
     self.assertEqual(r.status_code, 400)
+
 
   def test_view_user_regenerate_token(self):
     self.getTestUser()
@@ -102,6 +144,7 @@ class TestUserViews(unittest.TestCase):
     # Confirm the token has been changed
     r = requests.get(api_url+'/user/{}'.format(self.userPk), headers={'Authorization': newToken})
     self.assertEqual(r.json()['data']['authToken'], newToken)
+
 
   def test_view_user_verify(self):
     self.getTestUser()
@@ -130,6 +173,7 @@ class TestUserViews(unittest.TestCase):
     # Fetch user - should succeed
     r = requests.get(api_url+'/user/{}'.format(pk), headers={'Authorization': self.authToken})
     self.assertEqual(r.status_code, 200)
+
 
   def test_signup_flow(self):
     # Create a user

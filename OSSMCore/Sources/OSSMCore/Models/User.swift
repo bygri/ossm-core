@@ -18,6 +18,7 @@ public struct User {
     case InitError(String)
     case FetchError(String)
     case DoesNotExist(String)
+    case InvalidInput(fields: [String])
   }
 
   /**
@@ -90,7 +91,7 @@ public struct User {
 
   /// The primary key for this User. Unique.
   public var pk: Int
-  /// The User's email address, which is used in logging in.
+  /// The User's email address, which is used in logging in. Max length: 255.
   public var email: String
   /// The User's hashed password.
   private var passwordHash: String
@@ -102,11 +103,12 @@ public struct User {
   public var isActive: Bool
   /// The level of access this user is granted.
   public var accessLevel: AccessLevel
-  /// A world-facing display name.
+  /// A world-facing display name. Max length: 40.
   public var nickname: String
-  /// The user's timezone, for example "Australia/Sydney".
+  /// The user's timezone, for example "Australia/Sydney". Max length: 40.
+  /// This is not validated here as a real timezone, and should be validated in UI.
   public var timezoneName: String
-  /// The user's preferred interface langauage.
+  /// The user's preferred interface language.
   public var language: Language
   /// A string used to describe the user's chosen face, or avatar.
   public var faceRecipe: String
@@ -162,6 +164,8 @@ extension User {
   /**
   Create a new User from the given attributes, store it in the database, and then return it.
   - Throws: User.Error.FetchError, User.Error.InitError, or an SQL error.
+  
+  - Warning: This function ignores all model validation.
   */
   public static func create(withEmail email: String, password: String, authToken: AuthToken, verificationCode: String?, isActive: Bool, accessLevel: AccessLevel, nickname: String, timezoneName: String, language: Language, faceRecipe: String, dateCreated: NSDate, lastLogin: NSDate?) throws -> User {
     // TODO: Zewo's PostgreSQL cannot accept a nil value as a parameter - it tries to insert "NULL" not NULL. So until that
@@ -234,14 +238,46 @@ extension User {
     return nil
   }
 
+
+  static let emailRegex = try! NSRegularExpression(pattern: "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}", options: [])
+  static let validNicknameChars = Set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-_ ".characters)
+  
   /**
   Create and save a new User object with some default parameters.
   The User's account will be created inactive and a verification code will be generated.
+  This function validates its inputs.
   */
   public static func create(withEmail email: String, password: String, timezoneName: String, language: Language, nickname: String) throws -> User {
+    // Validate inputs
+    var invalidFields: [String] = []
+    // email
+    if
+      email.characters.count > 255 ||
+      emailRegex.numberOfMatches(in: email, options: [], range: NSRange(location: 0, length: email.characters.count)) == 0
+    {
+      invalidFields.append("email")
+    }
+    // timezone
+    if timezoneName.characters.count > 40 {
+      invalidFields.append("timezoneName")
+    }
+    // nickname
+    if nickname.characters.count > 40 ||
+      nickname.characters.filter({
+        validNicknameChars.contains($0)
+      }).count != nickname.characters.count
+    {
+      invalidFields.append("nickname")
+    }
+    if invalidFields.count > 0 {
+      log("Invalid fields \(invalidFields)", level: .Error)
+      throw User.Error.InvalidInput(fields: invalidFields)
+    }
+    
+    // Save the new object.
     do {
       return try User.create(
-        withEmail: email,
+        withEmail: email.lowercased(),
         password: password,
         authToken: try AuthToken.generateUnique(),
         verificationCode: AuthToken.generate().stringValue,
@@ -299,6 +335,7 @@ extension User {
   Recreates the User's auth token. Guaranteed to be new.
   */
   public func regenerateToken() throws -> User.AuthToken {
+    // TODO: wrap this in a transaction
     let oldToken = authToken
     var newToken = authToken
     while oldToken == newToken {
@@ -326,6 +363,7 @@ extension User.AuthToken {
     return token
   }
 }
+
 
 extension User.AuthToken: Equatable {}
 public func ==(lhs: User.AuthToken, rhs: User.AuthToken) -> Bool {
