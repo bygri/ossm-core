@@ -257,6 +257,10 @@ extension User {
     {
       invalidFields.append("email")
     }
+    // password
+    if password.characters.count < 8 {
+      invalidFields.append("password")
+    }
     // timezone
     if timezoneName.characters.count > 40 {
       invalidFields.append("timezoneName")
