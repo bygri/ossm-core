@@ -11,8 +11,8 @@ CREATE TABLE users (
   is_active boolean NOT NULL,
   access_level smallint NOT NULL CHECK (access_level >= 0),
   nickname varchar(40) NOT NULL UNIQUE,
-  timezone_name varchar(40) NOT NULL,
-  language_code varchar(6) NOT NULL,
+  timezone varchar(40) NOT NULL,
+  language varchar(8) NOT NULL,
   face_recipe varchar(255) NOT NULL,
   date_created timestamp with time zone NOT NULL,
   last_login timestamp with time zone

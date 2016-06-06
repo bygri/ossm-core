@@ -64,7 +64,6 @@ credentials are incorrect. This view never returns `404` so as to protect the em
         
 - `401` Authentication failed. Either the email doesn't exist, or the password is incorrect.
 
-    
 
 ## /user/create [POST]
 
@@ -88,7 +87,13 @@ Creates a user. The user is inactive by default and requires verification.
           "verificationCode": "abcdef"
         }
         
-- `400` Creating the User failed.
+- `400` Creating the User failed. These are the possible error types:
+        
+    - email: TOO_LONG, INVALID_EMAIL
+    - password: TOO_SHORT
+    - timezoneName: TOO_LONG
+    - nickname: TOO_LONG, INVALID_CHARACTERS
+
 
 
 ## /user/regenerateToken/:pkInt [POST]

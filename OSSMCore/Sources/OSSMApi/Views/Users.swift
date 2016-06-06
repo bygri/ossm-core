@@ -20,8 +20,8 @@ func userDetailView(_ request: Request, pk: Int) -> Response {
         "isActive": user.isActive,
         "accessLevel": Int(user.accessLevel.rawValue),
         "nickname": user.nickname,
-        "timezoneName": user.timezoneName,
-        "language": user.language.rawValue,
+        "timezone": user.timezone,
+        "language": user.language,
         "dateCreated": jsonFromDate(user.dateCreated),
         "lastLogin": jsonFromDate(user.lastLogin)
       ] as [String: JsonRepresentable]))
@@ -34,8 +34,8 @@ func userDetailView(_ request: Request, pk: Int) -> Response {
         "isActive": user.isActive,
         "accessLevel": Int(user.accessLevel.rawValue),
         "nickname": user.nickname,
-        "timezoneName": user.timezoneName,
-        "language": user.language.rawValue,
+        "timezone": user.timezone,
+        "language": user.language,
         "dateCreated": jsonFromDate(user.dateCreated),
         "lastLogin": jsonFromDate(user.lastLogin)
       ] as [String: JsonRepresentable]))
@@ -47,39 +47,55 @@ func userDetailView(_ request: Request, pk: Int) -> Response {
 
 
 func userAuthenticateView(_ request: Request) -> Response {
+  log("request.data: \(request.data)", level: .Debug)
   do {
     guard let
       email = request.data["email"].string,
       password = request.data["password"].string
-    else { return Response(status: .badRequest) }
+    else {
+      throw OSSMApi.Error.ClientDataNotValid
+    }
+    log("Auth with email \(email) and password \(password)", level: .Debug)
     guard let
       pk = try User.authenticateUser(withEmail: email, password: password)
-    else { return Response(status: .unauthorized) }
+    else {
+      log("User not authorised", level: .Debug)
+      return Response(status: .unauthorized)
+    }
     let user = try User.get(withPk: pk)
     return response(Json([
       "pk": pk,
       "authToken": user.authToken.stringValue
     ] as [String: JsonRepresentable]))
-  } catch User.Error.DoesNotExist { return Response(status: .notFound)
-  } catch let error { return responseServerError(error)
+  } catch User.Error.DoesNotExist {
+    log("User not found", level: .Debug)
+    return Response(status: .notFound)
+  } catch let error {
+    log("Unhandled error \(error)", level: .Error)
+    return Response(status: .internalServerError, json: Json([
+      "reason": "UNHANDLED_ERROR",
+      "error": "\(error)"
+    ]))
   }
 }
 
 
 func userCreateView(_ request: Request) -> Response {
+  log("request.data: \(request.data)", level: .Debug)
   do {
     guard let
       email = request.data["email"].string,
       password = request.data["password"].string,
-      timezoneName = request.data["timezoneName"].string,
-      languageString = request.data["language"].string,
-      language = Language(rawValue: languageString),
+      timezone = request.data["timezone"].string,
+      language = request.data["language"].string,
       nickname = request.data["nickname"].string
-    else { return Response(status: .badRequest) }
+    else {
+      throw OSSMApi.Error.ClientDataNotValid
+    }
     let user = try User.create(
       withEmail: email,
       password: password,
-      timezoneName: timezoneName,
+      timezone: timezone,
       language: language,
       nickname: nickname)
     guard let verificationCode = user.verificationCode
@@ -88,7 +104,26 @@ func userCreateView(_ request: Request) -> Response {
       "pk": user.pk,
       "verificationCode": verificationCode
     ] as [String: JsonRepresentable]), status: .created)
-  } catch let error { return Response(status: .badRequest) // TODO: handle a 'this user exists' error differently
+  } catch User.Error.InvalidInput(let fields) {
+    log("Invalid input \(fields)", level: .Error)
+    return Response(status: .badRequest, json: Json([
+      "reason": "INVALID_INPUT",
+      "fields": Json(fields.map({
+        Json([$0.fieldName, $0.failureCode()])
+      }) as [JsonRepresentable]),
+    ] as [String: JsonRepresentable]))
+  } catch User.Error.DuplicateKey(let key) {
+    log("Duplicate key: \(key)", level: .Error)
+    return Response(status: .badRequest, json: Json([
+      "reason": "DUPLICATE_KEY",
+      "field": key
+    ]))
+  } catch let error {
+    log("Unhandled error \(error)", level: .Error)
+    return Response(status: .internalServerError, json: Json([
+      "reason": "UNHANDLED_ERROR",
+      "error": "\(error)"
+    ]))
   }
 }
 

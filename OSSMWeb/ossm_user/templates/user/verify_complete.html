@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Account verification{% endblock %}
+
+{% block content %}
+
+  <div class='section'>
+    <div class='container'>
+      <div class='row'>
+        <div class='col-xs-12 col-sm-10 col-md-8'>
+          {% if success %}
+            <h2>Account successfully verified</h2>
+            <p>
+              Awesome, well done.
+            </p>
+            <p>
+              <a href='{% url "user:login" %}'>Click here to login.</a>
+            </p>
+          {% else %}
+            <h2>Fail</h2>
+            <p>
+              Verification failed. Verification links are only valid for 24 hours. You may need to
+              <a href='{% url "user:create" %}'>create your account again</a>.
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

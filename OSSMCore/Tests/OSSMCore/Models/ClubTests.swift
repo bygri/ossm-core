@@ -15,13 +15,13 @@ class ClubTests: XCTestCase {
       let user = try User.create(
         withEmail: "test@test.com",
         password: "password",
-        authToken: User.AuthToken.generate(),
+        authToken: AuthToken.generate(),
         verificationCode: nil,
         isActive: true,
         accessLevel: User.AccessLevel.User,
         nickname: "testuser",
-        timezoneName: "Australia/Sydney",
-        language: Language.Australian,
+        timezone: "Australia/Sydney",
+        language: "en-au",
         faceRecipe: "",
         dateCreated: NSDate(),
         lastLogin: nil

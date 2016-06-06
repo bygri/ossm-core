@@ -21,7 +21,7 @@ public enum AuthError: ErrorProtocol {
 }
 
 
-public func authenticatedUserPk(fromToken token: User.AuthToken) -> Int? {
+public func authenticatedUserPk(fromToken token: AuthToken) -> Int? {
   // In the cache, the token is the key, and the userPk is the value
   // If the pk and token are already cached, and match, then return happily.
   if let pk = (cache.object(forKey: NSString(string: token.stringValue)) as? NSNumber)?.integerValue {
@@ -31,19 +31,18 @@ public func authenticatedUserPk(fromToken token: User.AuthToken) -> Int? {
   // Failing this, load the data from the database.
   log("Not cached, fetching from database.", level: .Debug)
   do {
-    if let pk = try User.getPk(forAuthToken: token) {
-      // Store the token and pk in our cache
-      log("Caching fetched token for user \(pk)")
-      cache.setObject(NSNumber(integer: pk), forKey: NSString(string: token.stringValue), cost: 40)
-      return pk
-    }
+    let pk = try User.getPk(forAuthToken: token)
+    // Store the token and pk in our cache
+    log("Caching fetched token for user \(pk)")
+    cache.setObject(NSNumber(integer: pk), forKey: NSString(string: token.stringValue), cost: 40)
+    return pk
   } catch {}
   log("Invalid authentication token.", level: .Warn)
   return nil
 }
 
 
-public func purgeCachedToken(token: User.AuthToken) {
+public func purgeCachedToken(token: AuthToken) {
   cache.removeObject(forKey: NSString(string: token.stringValue))
 }
 

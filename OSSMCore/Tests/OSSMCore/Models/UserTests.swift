@@ -12,49 +12,52 @@ class UserTests: XCTestCase {
 
   func testAuthToken() {
     // Init with a valid token string
-    XCTAssertNotNil(
-      User.AuthToken(string: "ABCDEFabcdef12345600"),
-      "The token should be valid."
-    )
+    do {
+      try _ = AuthToken(string: "ABCDEFabcdef12345600")
+    } catch {
+      XCTFail("The token should be valid.")
+    }
   }
 
   func testAuthTokenStringValue() {
     // Test conversion to and from a token string
     let string = "ABCDEFabcdef12345600"
-    guard let token = User.AuthToken(string: string) else {
+    do {
+      let token = try AuthToken(string: string)
+      XCTAssertEqual(string, token.stringValue)
+    } catch {
       XCTFail("The token should be valid.")
       return
     }
-    XCTAssertEqual(string, token.stringValue)
   }
 
   func testInvalidAuthTokens() {
     // Try initing with invalid token strings
-    XCTAssertNil(
-      User.AuthToken(string: "too short"),
-      "A short token string should be invalid."
-    )
-    XCTAssertNil(
-      User.AuthToken(string: "too long long long far too long"),
-      "A long token string should be invalid."
-    )
-    XCTAssertNil(
-      User.AuthToken(string: "inv@lid character$"),
-      "A token string should not contain invalid characters."
-    )
+    do {
+      try _ = AuthToken(string: "too short")
+      XCTFail("A short token string should be invalid.")
+    } catch {}
+    do {
+      try _ = AuthToken(string: "too long long long far too long")
+      XCTFail("A long token string should be invalid.")
+    } catch {}
+    do {
+      try _ = AuthToken(string: "inv@lid character$")
+      XCTFail("A token string should not contain invalid characters.")
+    } catch {}
   }
 
   func testGenerateAuthToken() {
-    XCTAssertNotNil(User.AuthToken.generate())
+    XCTAssertNotNil(AuthToken.generate())
   }
 
   func testGenerateUniqueAuthToken() {
-    XCTAssertNotNil(try? User.AuthToken.generateUnique())
+    XCTAssertNotNil(try? AuthToken.generateUnique())
   }
 
   func testCreateUser() {
     do {
-      let generatedToken = try User.AuthToken.generateUnique()
+      let generatedToken = try AuthToken.generateUnique()
       let now = NSDate()
       let createdUser = try User.create(
         withEmail: "test@test.com",
@@ -64,8 +67,8 @@ class UserTests: XCTestCase {
         isActive: true,
         accessLevel: User.AccessLevel.User,
         nickname: "testuser",
-        timezoneName: "Australia/Sydney",
-        language: Language.Australian,
+        timezone: "Australia/Sydney",
+        language: "en-au",
         faceRecipe: "",
         dateCreated: now,
         lastLogin: nil
@@ -78,8 +81,8 @@ class UserTests: XCTestCase {
       XCTAssertEqual(user.isActive, true)
       XCTAssertEqual(user.accessLevel, User.AccessLevel.User)
       XCTAssertEqual(user.nickname, "testuser")
-      XCTAssertEqual(user.timezoneName, "Australia/Sydney")
-      XCTAssertEqual(user.language, Language.Australian)
+      XCTAssertEqual(user.timezone, "Australia/Sydney")
+      XCTAssertEqual(user.language, "en-au")
       XCTAssertEqual(user.faceRecipe, "")
       XCTAssertTrue((user.dateCreated.timeIntervalSince(now)) < 100)
       XCTAssertEqual(user.lastLogin, nil)
@@ -96,8 +99,8 @@ class UserTests: XCTestCase {
       let user = try User.create(
         withEmail: email,
         password: password,
-        timezoneName: "Australia/Sydney",
-        language: Language.Australian,
+        timezone: "Australia/Sydney",
+        language: "en-au",
         nickname: "testuser")
       guard let verificationCode = user.verificationCode else {
         XCTFail("A verification code should have been generated.")
@@ -152,13 +155,13 @@ class UserTests: XCTestCase {
       let user = try User.create(
         withEmail: email,
         password: password,
-        authToken: try User.AuthToken.generateUnique(),
+        authToken: try AuthToken.generateUnique(),
         verificationCode: nil,
         isActive: true,
         accessLevel: User.AccessLevel.User,
         nickname: "testuser",
-        timezoneName: "Australia/Sydney",
-        language: Language.Australian,
+        timezone: "Australia/Sydney",
+        language: "en-au",
         faceRecipe: "",
         dateCreated: NSDate(),
         lastLogin: nil
@@ -195,13 +198,13 @@ class UserTests: XCTestCase {
       var user = try User.create(
         withEmail: email,
         password: password,
-        authToken: try User.AuthToken.generateUnique(),
+        authToken: try AuthToken.generateUnique(),
         verificationCode: nil,
         isActive: true,
         accessLevel: User.AccessLevel.User,
         nickname: "testuser",
-        timezoneName: "Australia/Sydney",
-        language: Language.Australian,
+        timezone: "Australia/Sydney",
+        language: "en-au",
         faceRecipe: "",
         dateCreated: NSDate(),
         lastLogin: nil
@@ -232,13 +235,13 @@ class UserTests: XCTestCase {
       var user = try User.create(
         withEmail: email,
         password: password,
-        authToken: try User.AuthToken.generateUnique(),
+        authToken: try AuthToken.generateUnique(),
         verificationCode: nil,
         isActive: true,
         accessLevel: User.AccessLevel.User,
         nickname: "testuser",
-        timezoneName: "Australia/Sydney",
-        language: Language.Australian,
+        timezone: "Australia/Sydney",
+        language: "en-au",
         faceRecipe: "",
         dateCreated: NSDate(),
         lastLogin: nil

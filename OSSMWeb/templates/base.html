@@ -6,7 +6,7 @@
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <title>{% block title%}{% trans "OSSM, the open-source sports manager game" %}{% endblock %}</title>
+    <title>{% block title %}{% trans "OSSM, the open-source sports manager game" %}{% endblock %}</title>
     <link rel='stylesheet' href='{% static "cosmo.bootstrap.min.css" %}'>
     <script src='https://code.jquery.com/jquery-2.2.3.min.js'></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
@@ -22,29 +22,31 @@
               <span class='icon-bar'></span>
               <span class='icon-bar'></span>
             </button>
-            <a class='navbar-brand' href='{% url "index" %}'>OSSM</a>
+            <a class='navbar-brand' href='{% url "site:index" %}'>OSSM</a>
           </div>
           <!-- Collapsed -->
           <div class='collapse navbar-collapse' id='navbar-collapse'>
             <ul class='nav navbar-nav'>
-              {% if not user.is_authenticated %}
-              <li><a href='{% url "user-create" %}'>Create account</a></li>
-              <li><a href='{% url "login" %}'>Log in</a></li>
+              {% if not auth.is_authenticated %}
+
+              <li><a href='{% url "user:create" %}'>Create account</a></li>
+              <li><a href='{% url "user:login" %}'>Log in</a></li>
+
               {% else %}
 
               <li class='dropdown'>
                 <a href='#' class='dropdown-toggle' data-toggle='dropdown' role='button'>
-                  <img src='https://randomuser.me/api/portraits/lego/{{ user.pk }}.jpg' class='img-circle' style='width: 20px; height: 20px;'>
-                  {{ user.nickname }} <span class='caret'></span>
+                  <img src='https://randomuser.me/api/portraits/lego/{{ auth.user_pk }}.jpg' class='img-circle' style='width: 20px; height: 20px;'>
+                  {{ auth.nickname }} <span class='caret'></span>
                 </a>
                 <ul class='dropdown-menu'>
-                  <li><a href='{% url "my-user-detail" %}'>
+                  <li><a href='{% url "user:detail_self" %}'>
                     User profile
                   </a></li>
                   <li class='disabled'><a href='#'>
                     Preferences
                   </a></li>
-                  <li><a href='{% url "logout" %}'>
+                  <li><a href='{% url "user:logout" %}'>
                     Log out
                   </a></li>
                 </ul>
@@ -52,7 +54,7 @@
 
               <li class='dropdown'>
                 <a href='#' class='dropdown-toggle' data-toggle='dropdown' role='button'>
-                  {{ user.nickname }} FC <span class='caret'></span>
+                  {{ auth.nickname }} FC <span class='caret'></span>
                 </a>
                 <ul class='dropdown-menu'>
                   <li class='disabled'><a href='#'>
@@ -139,14 +141,14 @@
 
               <li class="dropdown">
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button">
-                  {% trans "Discussion" %} <span class="caret"></span>
+                  {% trans "Community" %} <span class="caret"></span>
                 </a>
                 <ul class="dropdown-menu">
                   <li class='dropdown-header'>Development team</li>
-                  <li><a href='{% url "slack-invite" %}'>
+                  <li><a href='{% url "community:slack_invite" %}'>
                     {% trans "Get invitation" %}
                   </a></li>
-                  <li><a href='https://ossm.slack.com' target='_blank'>
+                  <li><a href='{% url "community:slack" %}' target='_blank'>
                     {% trans "Open Slack" %}
                   </a></li>
                   <li class='divider'></li>
@@ -163,12 +165,7 @@
                   </a></li>
                 </ul>
               </li>
-              {% endif %}
 
-              {% if user.is_staff %}
-              <li><a href='/admin/' target='_blank'>
-                {% trans "Admin" %}
-              </a></li>
               {% endif %}
             </ul>
           </div>
@@ -183,7 +180,8 @@
       <p>
         {% trans "OSSM. It's awesome." %}<br>
         {% trans "This is in early development. Data may get lost or wiped at any time (but you'll be kept informed on Slack)." %}
-        {% trans "There is no game here. Yet." %}
+        {% trans "There is no game here. Yet." %}<br>
+        <a href='https://github.com/bygri/ossm' target='_blank'>Check out the code on GitHub</a>.
       </p>
     </footer>
   </body>
