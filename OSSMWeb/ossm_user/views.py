@@ -160,7 +160,7 @@ def user_detail_self(request):
 def user_detail(request, pk):
   r = ossm_api.get('/user/{}'.format(pk), headers={'Authorization': Auth(request).token})
   if r.status_code == 404:
-    return HttpResponseNotFound
+    return HttpResponseNotFound()
   j = r.json()['data']
   return render(request, 'user/user_detail.html', {'user': {
     'pk': j['pk'],
