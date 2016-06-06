@@ -22,7 +22,7 @@ func jsonFromDate(_ date: NSDate?) -> JsonRepresentable {
 }
 
 
-// This is because putting ``"key": value ?? Json.null`` in code is currently failing.
+// This is because putting ``"key": value ?? Json.null`` in code is currently failing to compile.
 func jsonNullIfNot(_ value: JsonRepresentable?) -> JsonRepresentable {
   if let value = value {
     return value

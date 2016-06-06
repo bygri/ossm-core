@@ -7,8 +7,8 @@ Come visit a running instance at http://ossm.world.
 ## Running your own instance in development or production
 
 The project is currently divided into two components. There is a Swift backend
-[ossm-core] which provides an API consumed by a Django frontend [ossm-web]. Data
-must be stored in a Postgresql database.
+[ossm-core] which provides an API [ossm-api] consumed by a Django frontend
+[ossm-web]. Data is stored in a Postgresql database.
 
 ### Postgres
 
@@ -16,7 +16,7 @@ Create a database and import the file ``create.sql`` in the root of the repo.
 You will also want to populate the database with some fixtures, such as
 Locations.
 
-### ossm-core
+### ossm-core/ossm-api
 
 Build the project using the version of Swift found in the ``.swift_version``
 file. The product is invoked using ``ossm-api [path-to-config-file]`` where the
@@ -59,12 +59,10 @@ API.
 
 * The user speaks to Django (through nginx and uwsgi)
 
-* Django [ossm-web] is responsible for sessions, authentication and static file
+* Django [ossm-web] is responsible for sessions and static file
   serving as well as rendering localised HTML.
   All requests for game data are passed through to the Swift core.
-  Authentication here is handled by passing a token header to Swift. This part
-  touches only the User table in the database, along with the various Django
-  tables for sessions and admin.
+  Authentication here is handled by passing a token header to Swift.
 
 * Swift [ossm-api in ossm-core] is in itself a mini-webserver which speaks only
   JSON. It receives requests from the front-end, authenticates them with the

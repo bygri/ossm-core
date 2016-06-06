@@ -47,7 +47,6 @@ func userDetailView(_ request: Request, pk: Int) -> Response {
 
 
 func userAuthenticateView(_ request: Request) -> Response {
-  log("request.data: \(request.data)", level: .Debug)
   do {
     guard let
       email = request.data["email"].string,
@@ -55,11 +54,9 @@ func userAuthenticateView(_ request: Request) -> Response {
     else {
       throw OSSMApi.Error.ClientDataNotValid
     }
-    log("Auth with email \(email) and password \(password)", level: .Debug)
     guard let
       pk = try User.authenticateUser(withEmail: email, password: password)
     else {
-      log("User not authorised", level: .Debug)
       return Response(status: .unauthorized)
     }
     let user = try User.get(withPk: pk)
@@ -68,7 +65,6 @@ func userAuthenticateView(_ request: Request) -> Response {
       "authToken": user.authToken.stringValue
     ] as [String: JsonRepresentable]))
   } catch User.Error.DoesNotExist {
-    log("User not found", level: .Debug)
     return Response(status: .notFound)
   } catch let error {
     log("Unhandled error \(error)", level: .Error)
@@ -81,7 +77,6 @@ func userAuthenticateView(_ request: Request) -> Response {
 
 
 func userCreateView(_ request: Request) -> Response {
-  log("request.data: \(request.data)", level: .Debug)
   do {
     guard let
       email = request.data["email"].string,
@@ -105,7 +100,6 @@ func userCreateView(_ request: Request) -> Response {
       "verificationCode": verificationCode
     ] as [String: JsonRepresentable]), status: .created)
   } catch User.Error.InvalidInput(let fields) {
-    log("Invalid input \(fields)", level: .Error)
     return Response(status: .badRequest, json: Json([
       "reason": "INVALID_INPUT",
       "fields": Json(fields.map({
@@ -113,7 +107,6 @@ func userCreateView(_ request: Request) -> Response {
       }) as [JsonRepresentable]),
     ] as [String: JsonRepresentable]))
   } catch User.Error.DuplicateKey(let key) {
-    log("Duplicate key: \(key)", level: .Error)
     return Response(status: .badRequest, json: Json([
       "reason": "DUPLICATE_KEY",
       "field": key
