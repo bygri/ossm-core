@@ -1,25 +1,30 @@
 --Django's migrate command must be run after importing this SQL to create its own tables.
 
 --USER
-DROP TABLE IF EXISTS users CASCADE;
-CREATE TABLE users (
-  pk serial NOT NULL PRIMARY KEY,
-  email varchar(255) NOT NULL UNIQUE,
-  password varchar(128) NOT NULL,
-  auth_token varchar(20) NOT NULL UNIQUE,
-  verification_code varchar(20),
-  is_active boolean NOT NULL,
-  access_level smallint NOT NULL CHECK (access_level >= 0),
-  nickname varchar(40) NOT NULL UNIQUE,
-  timezone varchar(40) NOT NULL,
-  language varchar(8) NOT NULL,
-  face_recipe varchar(255) NOT NULL,
-  date_created timestamp with time zone NOT NULL,
-  last_login timestamp with time zone
-);
-CREATE INDEX users_email ON users (email varchar_pattern_ops);
-CREATE INDEX users_nickname ON users (nickname varchar_pattern_ops);
-CREATE INDEX users_auth_token ON users (auth_token varchar_pattern_ops);
+DO $$
+  BEGIN
+    BEGIN
+      CREATE TABLE users (
+        pk serial NOT NULL PRIMARY KEY,
+        email varchar(255) NOT NULL UNIQUE,
+        password varchar(128) NOT NULL,
+        auth_token varchar(20) NOT NULL UNIQUE,
+        verification_code varchar(20),
+        is_active boolean NOT NULL,
+        access_level smallint NOT NULL CHECK (access_level >= 0),
+        nickname varchar(40) NOT NULL UNIQUE,
+        timezone varchar(40) NOT NULL,
+        language varchar(8) NOT NULL,
+        face_recipe varchar(255) NOT NULL,
+        date_created timestamp with time zone NOT NULL,
+        last_login timestamp with time zone
+      );
+      CREATE INDEX users_email ON users (email varchar_pattern_ops);
+      CREATE INDEX users_nickname ON users (nickname varchar_pattern_ops);
+      CREATE INDEX users_auth_token ON users (auth_token varchar_pattern_ops);
+    END;
+  END;
+$$;
 
 --LOCATION
 DROP TABLE IF EXISTS locations CASCADE;

@@ -6,7 +6,10 @@ func configureRoutes() {
 
   let app = server()
   app.get("") { request in
-    return Json(["version": VERSION, "response": "Hello from ossm-api."])
+    return Json([
+      "version": Json(VERSION.map({ $0 as JsonRepresentable })),
+      "response": "Hello from ossm-api."
+    ])
   }
 
   //// USER routes
