@@ -9,7 +9,7 @@ def login_required(func):
   def _decorated(request, *args, **kwargs):
     user = Auth(request)
     if not user.is_authenticated:
-      return HttpResponseRedirect(reverse('user_login'))
+      return HttpResponseRedirect(reverse('user:login'))
     return func(request, *args, **kwargs)
   return _decorated
 
@@ -19,7 +19,7 @@ def anonymous_required(func):
   def _decorated(request, *args, **kwargs):
     user = Auth(request)
     if user.is_authenticated:
-      return HttpResponseRedirect(reverse('user_detail_self'))
+      return HttpResponseRedirect(reverse('user:detail_self'))
     return func(request, *args, **kwargs)
   return _decorated
 
