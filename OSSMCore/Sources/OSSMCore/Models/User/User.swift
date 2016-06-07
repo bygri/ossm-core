@@ -283,6 +283,13 @@ extension User {
     // Save changes to the object
     do {
       try db().execute("UPDATE users SET timezone = %@, language = %@, nickname = %@ WHERE pk = %@", parameters: timezone, language, nickname, pk)
+    } catch Result.Error.BadStatus(let status, let string) {
+    // Catch duplicate key
+    if string.range(of: "duplicate key") != nil {
+      if string.range(of: "users_nickname_key") != nil { throw User.Error.DuplicateKey(key: "nickname") }
+      throw User.Error.DuplicateKey(key: string)
+    }
+    throw OSSMCore.Error.UnhandledError(debugMessage: "Could not insert User into the database. PSQL error: \(string)", extra: status)
     } catch let error {
       throw OSSMCore.Error.UnhandledError(debugMessage: "Could not edit User's profile fields.", extra: error)
     }

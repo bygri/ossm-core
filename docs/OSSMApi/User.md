@@ -89,10 +89,10 @@ Creates a user. The user is inactive by default and requires verification.
         
 - `400` Creating the User failed. These are the possible error types:
         
-    - email: TOO_LONG, INVALID_EMAIL
-    - password: TOO_SHORT
-    - timezone: TOO_LONG
-    - nickname: TOO_LONG, INVALID_CHARACTERS
+    - email: LENGTH, EMAIL, DUPLICATE
+    - password: LENGTH
+    - timezone: LENGTH
+    - nickname: LENGTH, CHARACTERS, DUPLICATE
 
 
 ## /user/regenerateToken/:pkInt [POST]
@@ -144,7 +144,10 @@ Edit the current user's profile fields.
 ### Returns
 
 - `204` No content. Profile changed successfully.
-- `400` Inputs were missing or not valid.
+- `400` Inputs were missing or not valid. These are the possible error types:
+
+    - timezone: LENGTH
+    - nickname: LENGTH, CHARACTERS, DUPLICATE
 
 
 ## /user/changePassword [POST]

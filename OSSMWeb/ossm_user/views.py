@@ -7,7 +7,7 @@ from django.shortcuts import render
 from django.template.loader import render_to_string
 import ossm_api
 from .auth import Auth, login_required, anonymous_required
-from .forms import LoginForm, SignupForm, ChangePasswordForm, ResetPasswordForm
+from .forms import LoginForm, SignupForm, ChangePasswordForm, ResetPasswordForm, EditProfileForm
 
 
 @anonymous_required
@@ -143,7 +143,6 @@ def user_change_password(request):
           elif j['field'] == 'nickname':
             form.add_error('nickname', 'User already exists with this nickname.')
         elif j['reason'] == 'INVALID_INPUT':
-          print('problems are {}'.format(j))
           for (name, code) in j['fields']:
             if name == 'password' and code == 'LENGTH':
               form.add_error('new_password1', 'Must be 8 characters or more.')
@@ -195,4 +194,33 @@ def user_detail(request, pk):
 
 @login_required
 def user_edit_self(request):
-  return 'edit profile'
+  if request.method == 'POST':
+    form = EditProfileForm(request.POST)
+    if form.is_valid():
+      r = ossm_api.post('/user/edit', headers={'Authorization': Auth(request).token}, data={
+        'timezone': form.cleaned_data['timezone'],
+        'language': form.cleaned_data['language'],
+        'nickname': form.cleaned_data['nickname'],
+      })
+      if r.status_code == 204:
+        Auth.refresh(request)
+        return HttpResponseRedirect(reverse('user:detail_self'))
+      elif r.status_code == 400:
+        j = r.json()
+        if j['reason'] == 'DUPLICATE_KEY':
+          if j['field'] == 'nickname':
+            form.add_error('nickname', 'User already exists with this nickname.')
+        elif j['reason'] == 'INVALID_INPUT':
+          print('problems are {}'.format(j))
+          for (name, code) in j['fields']:
+            if name == 'password' and code == 'LENGTH':
+              form.add_error('new_password1', 'Must be 8 characters or more.')
+      return render(request, 'user/profile_edit.html', {'form': form})
+  else:
+    user = Auth(request)
+    form = EditProfileForm(initial={
+      'nickname': user.nickname,
+      'timezone': user.timezone,
+      'language': user.language,
+    })
+  return render(request, 'user/profile_edit.html', {'form': form})

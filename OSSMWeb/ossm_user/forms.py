@@ -36,3 +36,15 @@ class ChangePasswordForm(forms.Form):
 
 class ResetPasswordForm(forms.Form):
   email = forms.EmailField(label='Email', max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
+
+
+class EditProfileForm(forms.Form):
+  timezone = forms.ChoiceField(label='Timezone',
+    choices=[(t, t) for t in pytz.common_timezones],
+    initial='Australia/Sydney', widget=forms.Select(attrs={'class': 'form-control'}))
+  language = forms.ChoiceField(label='Language', choices=(
+    ('en-AU', 'Australian'),
+    ('en-PIRAT', 'Pirate'),
+    ('sv-CHEF', 'Swedish Chef'),
+  ), initial='en-AU', widget=forms.Select(attrs={'class': 'form-control'}))
+  nickname = forms.CharField(max_length=40, widget=forms.TextInput(attrs={'class': 'form-control'}))

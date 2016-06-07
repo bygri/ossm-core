@@ -165,6 +165,18 @@ func userEditProfileView(_ request: Request) -> Response {
     let user = try User.get(withPk: authPk)
     try user.editProfile(timezone: timezone, language: language, nickname: nickname)
     return Response(status: .noContent)
+  } catch User.Error.InvalidInput(let fields) {
+    return Response(status: .badRequest, json: Json([
+      "reason": "INVALID_INPUT",
+      "fields": Json(fields.map({
+        Json([$0.fieldName, $0.failureCode()])
+      }) as [JsonRepresentable]),
+    ] as [String: JsonRepresentable]))
+  } catch User.Error.DuplicateKey(let key) {
+    return Response(status: .badRequest, json: Json([
+      "reason": "DUPLICATE_KEY",
+      "field": key
+    ]))
   } catch let error { return responseServerError(error)
   }
 }
