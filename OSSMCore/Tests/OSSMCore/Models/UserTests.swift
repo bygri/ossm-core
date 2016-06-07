@@ -235,11 +235,12 @@ class UserTests: XCTestCase {
       var user = try createTestUser()
       XCTAssertTrue(user.isActive, "User should be active")
       // Now edit profile fields, reload, and see if they change
-      try user.editProfile(timezone: "Australia/Melbourne", language: "en-PIRAT", nickname: "Nicky")
+      try user.editProfile(timezone: "Australia/Melbourne", language: "en-PIRAT", nickname: "Nicky", email: "e@mail.com")
       user = try User.get(withPk: user.pk)
       XCTAssertEqual(user.timezone, "Australia/Melbourne")
       XCTAssertEqual(user.language, "en-PIRAT")
       XCTAssertEqual(user.nickname, "Nicky")
+      XCTAssertEqual(user.email, "e@mail.com")
     } catch let error {
       XCTFail("\(error)")
     }

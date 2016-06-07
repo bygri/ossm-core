@@ -47,4 +47,5 @@ class EditProfileForm(forms.Form):
     ('en-PIRAT', 'Pirate'),
     ('sv-CHEF', 'Swedish Chef'),
   ), initial='en-AU', widget=forms.Select(attrs={'class': 'form-control'}))
+  email = forms.EmailField(label='Email', max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
   nickname = forms.CharField(max_length=40, widget=forms.TextInput(attrs={'class': 'form-control'}))

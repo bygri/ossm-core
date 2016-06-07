@@ -263,7 +263,7 @@ extension User {
     }
   }
 
-  public func editProfile(timezone: String, language: String, nickname: String) throws {
+  public func editProfile(timezone: String, language: String, nickname: String, email: String) throws {
     // Validate inputs
     var invalidFields: [ValidationError] = []
     // timezone
@@ -277,19 +277,27 @@ extension User {
     if nickname.characters.filter({ User.validNicknameChars.contains($0) }).count != nickname.characters.count {
       invalidFields.append(ValidationError(fieldName: "nickname", failure: .Characters))
     }
+    // email
+    if email.characters.count > 255 {
+      invalidFields.append(ValidationError(fieldName: "email", failure: .Length))
+    }
+    if User.emailRegex.numberOfMatches(in: email, options: [], range: NSRange(location: 0, length: email.characters.count)) == 0 {
+      invalidFields.append(ValidationError(fieldName: "email", failure: .Email))
+    }
     if invalidFields.count > 0 {
       throw User.Error.InvalidInput(fields: invalidFields)
     }
     // Save changes to the object
     do {
-      try db().execute("UPDATE users SET timezone = %@, language = %@, nickname = %@ WHERE pk = %@", parameters: timezone, language, nickname, pk)
+      try db().execute("UPDATE users SET timezone = %@, language = %@, nickname = %@, email = %@ WHERE pk = %@", parameters: timezone, language, nickname, email, pk)
     } catch Result.Error.BadStatus(let status, let string) {
-    // Catch duplicate key
+    // Catch duplicate keys
     if string.range(of: "duplicate key") != nil {
-      if string.range(of: "users_nickname_key") != nil { throw User.Error.DuplicateKey(key: "nickname") }
+      if string.range(of: "users_email_key") != nil { throw User.Error.DuplicateKey(key: "email") }
+      else if string.range(of: "users_nickname_key") != nil { throw User.Error.DuplicateKey(key: "nickname") }
       throw User.Error.DuplicateKey(key: string)
     }
-    throw OSSMCore.Error.UnhandledError(debugMessage: "Could not insert User into the database. PSQL error: \(string)", extra: status)
+    throw OSSMCore.Error.UnhandledError(debugMessage: "Could not edit User's profile fields. PSQL error: \(string)", extra: status)
     } catch let error {
       throw OSSMCore.Error.UnhandledError(debugMessage: "Could not edit User's profile fields.", extra: error)
     }

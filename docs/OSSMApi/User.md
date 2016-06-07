@@ -140,6 +140,7 @@ Edit the current user's profile fields.
 - timezone: `String`
 - language: `String`
 - nickname: `String`
+- email: `String`
 
 ### Returns
 
@@ -148,6 +149,7 @@ Edit the current user's profile fields.
 
     - timezone: LENGTH
     - nickname: LENGTH, CHARACTERS, DUPLICATE
+    - email: LENGTH, EMAIL, DUPLICATE
 
 
 ## /user/changePassword [POST]

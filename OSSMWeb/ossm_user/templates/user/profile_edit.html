@@ -11,7 +11,8 @@
         <div class='col-xs-12 col-sm-10 col-md-8'>
           <h2>Edit your profile</h2>
           <p>
-            Change your displayed nickname, language or timezone preferences here.
+            Change your displayed nickname, language or timezone preferences here. If you change your email address,
+            you'll need to log in with your new email address.
           </p>
 
           <form class='form-horizontal' action='.' method='post'>
@@ -25,6 +26,18 @@
                 <div class='alert alert-warning'>{{ field.errors }}</div>
                 {% endif %}
                 <p class='help-block'>This is how you will be identified in OSSM.</p>
+              </div>
+              {% endwith %}
+            </div>
+            <div class='form-group'>
+              {% with field=form.email %}
+              <label for='{{ field.id_for_label }}' class='col-sm-3 control-label'>Email</label>
+              <div class='col-sm-9'>
+                {{ field }}
+                {% if field.errors %}
+                <div class='alert alert-warning'>{{ field.errors }}</div>
+                {% endif %}
+                <p class='help-block'>Your email address will be kept private (unless you choose to join our Slack development group).</p>
               </div>
               {% endwith %}
             </div>

@@ -201,6 +201,7 @@ def user_edit_self(request):
         'timezone': form.cleaned_data['timezone'],
         'language': form.cleaned_data['language'],
         'nickname': form.cleaned_data['nickname'],
+        'email': form.cleaned_data['email'],
       })
       if r.status_code == 204:
         Auth.refresh(request)
@@ -217,10 +218,16 @@ def user_edit_self(request):
               form.add_error('new_password1', 'Must be 8 characters or more.')
       return render(request, 'user/profile_edit.html', {'form': form})
   else:
+    # Pre-fill form with user data
     user = Auth(request)
+    r = ossm_api.get('/user/{}'.format(user.user_pk), headers={'Authorization': user.token})
+    if r.status_code == 404:
+      return HttpResponseNotFound()
+    j = r.json()['data']
     form = EditProfileForm(initial={
-      'nickname': user.nickname,
-      'timezone': user.timezone,
-      'language': user.language,
+      'nickname': j['nickname'],
+      'email': j['email'],
+      'timezone': j['timezone'],
+      'language': j['language'],
     })
   return render(request, 'user/profile_edit.html', {'form': form})

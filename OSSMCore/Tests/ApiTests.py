@@ -213,6 +213,7 @@ class TestUserViews(unittest.TestCase):
     # Edit my profile fields
     r = requests.post(api_url+'/user/edit', headers={'Authorization': self.authToken}, data={
       'nickname': 'nicky',
+      'email': 'e@mail.com',
       'timezone': 'Australia/Hobart',
       'language': 'sv-CHEF',
     })
@@ -222,6 +223,7 @@ class TestUserViews(unittest.TestCase):
     self.assertEqual(r.status_code, 200)
     d = r.json()['data']
     self.assertEqual(d['nickname'], 'nicky')
+    self.assertEqual(d['email'], 'e@mail.com')
     self.assertEqual(d['timezone'], 'Australia/Hobart')
     self.assertEqual(d['language'], 'sv-CHEF')
 

@@ -160,10 +160,11 @@ func userEditProfileView(_ request: Request) -> Response {
     guard let
       timezone = request.data["timezone"].string,
       language = request.data["language"].string,
-      nickname = request.data["nickname"].string
+      nickname = request.data["nickname"].string,
+      email = request.data["email"].string
     else { return Response(status: .badRequest) }
     let user = try User.get(withPk: authPk)
-    try user.editProfile(timezone: timezone, language: language, nickname: nickname)
+    try user.editProfile(timezone: timezone, language: language, nickname: nickname, email: email)
     return Response(status: .noContent)
   } catch User.Error.InvalidInput(let fields) {
     return Response(status: .badRequest, json: Json([
