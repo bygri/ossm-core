@@ -17,7 +17,7 @@ details will be returned.
           "isActive": true,
           "accessLevel": 1,
           "nickname": "user",
-          "timezoneName": "Australia/Sydney",
+          "timezone": "Australia/Sydney",
           "language": "en-au",
           "dateCreated": "2016-01-01 00:00:00+0000",
           "lastLogin": "2016-01-01 00:00:00+0000"
@@ -33,7 +33,7 @@ details will be returned.
           "isActive": true,
           "accessLevel": 1,
           "nickname": "user",
-          "timezoneName": "Australia/Sydney",
+          "timezone": "Australia/Sydney",
           "language": "en-au",
           "dateCreated": "2016-01-01 00:00:00+0000",
           "lastLogin": "2016-01-01 00:00:00+0000"
@@ -73,7 +73,7 @@ Creates a user. The user is inactive by default and requires verification.
 
 - email: `String`
 - password: `String`
-- timezoneName: `String`
+- timezone: `String`
 - language: `String`
 - nickname: `String`
 
@@ -91,9 +91,8 @@ Creates a user. The user is inactive by default and requires verification.
         
     - email: TOO_LONG, INVALID_EMAIL
     - password: TOO_SHORT
-    - timezoneName: TOO_LONG
+    - timezone: TOO_LONG
     - nickname: TOO_LONG, INVALID_CHARACTERS
-
 
 
 ## /user/regenerateToken/:pkInt [POST]
@@ -129,3 +128,37 @@ Attempt to verify a user. Verification turns the user active.
 - `204` No content. Verification succeeded.
 - `400` The verification failed.
 - `404` The User was not found.
+
+
+## /user/edit [POST]
+
+`auth-token-required`
+Edit the current user's profile fields.
+
+### Inputs
+
+- timezone: `String`
+- language: `String`
+- nickname: `String`
+
+### Returns
+
+- `204` No content. Profile changed successfully.
+- `400` Inputs were missing or not valid.
+
+
+## /user/changePassword [POST]
+
+`auth-token-required`
+Change the current user's password. Their existing password is required.
+
+### Inputs
+
+- oldPassword: `String`
+- newPassword: `String`
+
+### Returns
+
+- `204` No content. Password changed successfully.
+- `400` Inputs were missing or not valid.
+- `403` The old password was not correct.

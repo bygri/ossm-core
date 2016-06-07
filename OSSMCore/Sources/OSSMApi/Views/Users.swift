@@ -136,7 +136,6 @@ func userRegenerateTokenView(_ request: Request, pk: Int) -> Response {
     ] as [String: JsonRepresentable]))
   } catch let error { return responseServerError(error)
   }
-
 }
 
 
@@ -150,6 +149,46 @@ func userVerifyView(_ request: Request, pk: Int) -> Response {
       return Response(status: .badRequest)
     }
     return Response(status: .noContent)
+  } catch let error { return responseServerError(error)
+  }
+}
+
+
+func userEditProfileView(_ request: Request) -> Response {
+  do {
+    guard let authPk = authenticatedUserPk(fromRequest: request) else { return Response(status: .unauthorized) }
+    guard let
+      timezone = request.data["timezone"].string,
+      language = request.data["language"].string,
+      nickname = request.data["nickname"].string
+    else { return Response(status: .badRequest) }
+    let user = try User.get(withPk: authPk)
+    try user.editProfile(timezone: timezone, language: language, nickname: nickname)
+    return Response(status: .noContent)
+  } catch let error { return responseServerError(error)
+  }
+}
+
+
+func userChangePasswordView(_ request: Request) -> Response {
+  do {
+    guard let authPk = authenticatedUserPk(fromRequest: request) else { return Response(status: .unauthorized) }
+    guard let
+      oldPassword = request.data["oldPassword"].string,
+      newPassword = request.data["newPassword"].string
+    else { return Response(status: .badRequest) }
+    let user = try User.get(withPk: authPk)
+    try user.changePassword(from: oldPassword, to: newPassword)
+    return Response(status: .noContent)
+  } catch User.Error.Forbidden {
+    return Response(status: .forbidden)
+  } catch User.Error.InvalidInput(let fields) {
+  return Response(status: .badRequest, json: Json([
+    "reason": "INVALID_INPUT",
+    "fields": Json(fields.map({
+      Json([$0.fieldName, $0.failureCode()])
+    }) as [JsonRepresentable]),
+  ] as [String: JsonRepresentable]))
   } catch let error { return responseServerError(error)
   }
 }

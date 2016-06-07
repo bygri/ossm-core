@@ -18,12 +18,14 @@ DO $$
         face_recipe varchar(255) NOT NULL,
         date_created timestamp with time zone NOT NULL,
         last_login timestamp with time zone
-      );
-      CREATE INDEX users_email ON users (email varchar_pattern_ops);
-      CREATE INDEX users_nickname ON users (nickname varchar_pattern_ops);
-      CREATE INDEX users_auth_token ON users (auth_token varchar_pattern_ops);
-    END;
-  END;
+      );--
+      CREATE INDEX users_email ON users (email varchar_pattern_ops);--
+      CREATE INDEX users_nickname ON users (nickname varchar_pattern_ops);--
+      CREATE INDEX users_auth_token ON users (auth_token varchar_pattern_ops);--
+    EXCEPTION WHEN others THEN
+      -- do nothing
+    END;--
+  END;--
 $$;
 
 --LOCATION

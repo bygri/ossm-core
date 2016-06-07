@@ -25,21 +25,28 @@ class TestUserViews(unittest.TestCase):
   def tearDown(self):
     stopApi()
 
-  def getTestUser(self):
-    cur = db.cursor()
-    cur.execute('''
-      INSERT INTO users
-      (email, password, auth_token, is_active, access_level, nickname, timezone_name, language_code, face_recipe, date_created)
-      VALUES
-      ('test@test.com', '06b8cc0b030d942ee8689e440413d2e63e141c220cfeea03c01c4c68f1b4d88e', 'ABCDEFabcdef12345678', TRUE, 1, 'testuser', 'Australia/Sydney', 'en-au', '', '2016-01-01 00:00:00+0000')
-      RETURNING pk, auth_token
-    ''')
-    row = cur.fetchone()
-    cur.close()
-    self.userPk = row[0]
-    self.userPassword = 'password'
-    self.userEmail = 'test@test.com'
-    self.authToken = row[1]
+  def getTestUser(self, email='test@test.com', password='password'):
+    # Create the user
+    r = requests.post(api_url+'/user/create', data={
+      'email': email,
+      'password': password,
+      'timezone': 'Australia/Melbourne',
+      'language': 'en-AU',
+      'nickname': 'testuser'
+    })
+    j = r.json()['data']
+    pk = j['pk']
+    verification_code = j['verificationCode']
+    # Verify the user
+    r = requests.post(api_url+'/user/verify/{}'.format(pk), data={'code': verification_code})
+    # Authenticate the user
+    r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': password})
+    auth_token = r.json()['data']['authToken']
+    # Set my parameters
+    self.userPk = pk
+    self.userPassword = password
+    self.userEmail = email
+    self.authToken = auth_token
 
 
   def test_view_user_detail(self):
@@ -68,37 +75,27 @@ class TestUserViews(unittest.TestCase):
     r = requests.post(api_url+'/user/create', data={
       'email': email,
       'password': password,
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'testuser'
     })
     self.assertEqual(r.status_code, 201)
-    
+
   def test_view_user_create_invalid(self):
     # Invalid email
     r = requests.post(api_url+'/user/create', data={
       'email': 'notanemail',
       'password': 'password',
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'invalidemail'
-    })
-    print(r)
-    self.assertEqual(r.status_code, 400)
-    # Invalid language
-    r = requests.post(api_url+'/user/create', data={
-      'email': 'test2@user.com',
-      'password': 'password',
-      'timezoneName': 'Australia/Melbourne',
-      'language': 'martian',
-      'nickname': 'invalidlanguage'
     })
     self.assertEqual(r.status_code, 400)
     # Invalid nickname
     r = requests.post(api_url+'/user/create', data={
       'email': 'test3@user.com',
       'password': 'password',
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'Not%a$valid@nickname'
     })
@@ -111,7 +108,7 @@ class TestUserViews(unittest.TestCase):
     r = requests.post(api_url+'/user/create', data={
       'email': email,
       'password': password,
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'testuser'
     })
@@ -119,7 +116,7 @@ class TestUserViews(unittest.TestCase):
     r = requests.post(api_url+'/user/create', data={
       'email': email,
       'password': password,
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'duplicateemail'
     })
@@ -127,7 +124,7 @@ class TestUserViews(unittest.TestCase):
     r = requests.post(api_url+'/user/create', data={
       'email': 'duplicate@nickname.com',
       'password': password,
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'testuser'
     })
@@ -154,7 +151,7 @@ class TestUserViews(unittest.TestCase):
     r = requests.post(api_url+'/user/create', data={
       'email': email,
       'password': password,
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'test2'
     })
@@ -182,7 +179,7 @@ class TestUserViews(unittest.TestCase):
     r = requests.post(api_url+'/user/create', data={
       'email': email,
       'password': password,
-      'timezoneName': 'Australia/Melbourne',
+      'timezone': 'Australia/Melbourne',
       'language': 'en-au',
       'nickname': 'testuser'
     })
@@ -210,7 +207,41 @@ class TestUserViews(unittest.TestCase):
     # Attempt auth with correct credentials
     r = requests.post(api_url+'/user/authenticate', data={'email': email, 'password': password})
     self.assertEqual(r.status_code, 200)
-    authToken = r.json()['data']['authToken']
+
+  def test_edit_profile(self):
+    self.getTestUser()
+    # Edit my profile fields
+    r = requests.post(api_url+'/user/edit', headers={'Authorization': self.authToken}, data={
+      'nickname': 'nicky',
+      'timezone': 'Australia/Hobart',
+      'language': 'sv-CHEF',
+    })
+    self.assertEqual(r.status_code, 204)
+    # Confirm they have changed
+    r = requests.get(api_url+'/user/{}'.format(self.userPk), headers={'Authorization': self.authToken})
+    self.assertEqual(r.status_code, 200)
+    d = r.json()['data']
+    self.assertEqual(d['nickname'], 'nicky')
+    self.assertEqual(d['timezone'], 'Australia/Hobart')
+    self.assertEqual(d['language'], 'sv-CHEF')
+
+  def test_change_password(self):
+    self.getTestUser()
+    # Use the incorrect password
+    r = requests.post(api_url+'/user/changePassword', headers={'Authorization': self.authToken}, data={
+      'oldPassword': 'notmypassword',
+      'newPassword': 'boggles'
+    })
+    self.assertEqual(r.status_code, 403)
+    # Use the correct password
+    r = requests.post(api_url+'/user/changePassword', headers={'Authorization': self.authToken}, data={
+      'oldPassword': self.userPassword,
+      'newPassword': 'boggles'
+    })
+    self.assertEqual(r.status_code, 204)
+    # Attempt auth now
+    r = requests.post(api_url+'/user/authenticate', data={'email': self.userEmail, 'password': 'boggles'})
+    self.assertEqual(r.status_code, 200)
 
 
 ### Configuration rubbish
@@ -248,7 +279,7 @@ def configure(args):
   # Fetch create queries
   create_file_path = config['database']['createFilePath']
   with open(os.path.expanduser(create_file_path)) as fp:
-    _create_queries = fp.read().split(';')
+    _create_queries = fp.read().split(';\n')
   # Build API url
   api_url = 'http://{}:{}'.format(
     config['server']['host'], +config['server']['port']
@@ -259,6 +290,7 @@ def startApi():
   global _api_process
   # Re-create database tables
   cur = db.cursor()
+  cur.execute('DROP OWNED BY ossm')
   for query in _create_queries:
     if query.strip(' \n\t') != '':
       cur.execute(query)

@@ -52,18 +52,18 @@ def user_create(request):
             form.add_error('nickname', 'User already exists with this nickname.')
         elif j['reason'] == 'INVALID_INPUT':
           for (name, code) in j['fields']:
-            if name == 'email' and code == 'TOO_LONG':
+            if name == 'email' and code == 'LENGTH':
               form.add_error('email', 'Must be 255 characters or less.')
-            if name == 'email' and code == 'INVALID_EMAIL':
+            if name == 'email' and code == 'EMAIL':
               form.add_error('email', 'Does not appear to be a valid email address.')
-            if name == 'password' and code == 'TOO_SHORT':
+            if name == 'password' and code == 'LENGTH':
               form.add_error('password', 'Must be 8 characters or more.')
-            if name == 'timezoneName' and code == 'TOO_LONG':
+            if name == 'timezoneName' and code == 'LENGTH':
               # TODO: message the admin
               form.add_error('timezone', 'Internal server error. Try another timezone.')
-            if name == 'nickname' and code == 'TOO_LONG':
+            if name == 'nickname' and code == 'LENGTH':
               form.add_error('nickname', 'Must be 255 characters or less.')
-            if name == 'nickname' and code == 'INVALID_CHARACTERS':
+            if name == 'nickname' and code == 'CHARACTERS':
               form.add_error('nickname', 'Must contain only letters, numbers, spaces, hyphens and underscores.')
         else:
           return 'shit, unhandled error: {}'.format(j['error'])
@@ -127,7 +127,26 @@ def user_change_password(request):
   if request.method == 'POST':
     form = ChangePasswordForm(request.POST)
     if form.is_valid():
-      # TODO: we don't do this yet
+      r = ossm_api.post('/user/changePassword', headers={'Authorization': Auth(request).token}, data={
+        'oldPassword': form.cleaned_data['old_password'],
+        'newPassword': form.cleaned_data['new_password1']
+      })
+      if r.status_code == 204:
+        return render(request, 'user/password_change_done.html')
+      elif r.status_code == 403:
+        form.add_error('old_password', 'Your old password did not match.')
+      elif r.status_code == 400:
+        j = r.json()
+        if j['reason'] == 'DUPLICATE_KEY':
+          if j['field'] == 'email':
+            form.add_error('email', 'User already exists with this email.')
+          elif j['field'] == 'nickname':
+            form.add_error('nickname', 'User already exists with this nickname.')
+        elif j['reason'] == 'INVALID_INPUT':
+          print('problems are {}'.format(j))
+          for (name, code) in j['fields']:
+            if name == 'password' and code == 'LENGTH':
+              form.add_error('new_password1', 'Must be 8 characters or more.')
       return render(request, 'user/password_change_form.html', {'form': form})
   else:
     form = ChangePasswordForm()

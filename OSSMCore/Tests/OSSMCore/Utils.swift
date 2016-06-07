@@ -60,13 +60,14 @@ func prepareTestDatabase() {
       print("Unable to decode SQL file at path \(createFilePath).")
       exit(1)
     }
-    _createQueryStrings = createQueryString.components(separatedBy: ";")
+    _createQueryStrings = createQueryString.components(separatedBy: ";\n")
     // Set up the hasher
     configureHash(withKey: secretKey)
   }
 
   // Every time this is called, we want to re-create test tables.
   do {
+    try db().execute("DROP OWNED BY ossm")
     for queryString in _createQueryStrings {
       try db().execute(queryString)
     }

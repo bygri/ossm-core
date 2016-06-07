@@ -22,10 +22,16 @@ class SignupForm(forms.Form):
 
 
 class ChangePasswordForm(forms.Form):
-  email = forms.EmailField(label='Email', max_length=255, widget=forms.TextInput(attrs={'class': 'form-control'}))
   old_password = forms.CharField(label='Old password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
   new_password1 = forms.CharField(label='New password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
   new_password2 = forms.CharField(label='Confirm password', widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+  def clean(self):
+    cleaned_data = super().clean()
+    p1 = self.cleaned_data.get('new_password1')
+    p2 = self.cleaned_data.get('new_password2')
+    if p1 != p2:
+      self.add_error('new_password2', 'Passwords do not match.')
 
 
 class ResetPasswordForm(forms.Form):

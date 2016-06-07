@@ -20,6 +20,7 @@ public struct User {
     case DoesNotExist()
     case InvalidInput(fields: [ValidationError])
     case DuplicateKey(key: String)
+    case Forbidden
   }
 
   /**
@@ -118,7 +119,7 @@ extension User {
     do {
       if let row = try db().execute(
         "INSERT INTO users (email, password, auth_token, verification_code, is_active, access_level, nickname, timezone, language, face_recipe, date_created, last_login) VALUES (%@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@) RETURNING *",
-        parameters: email, hashString(password), authToken.stringValue, verificationCode, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated), dbStringFromDate(lastLogin)
+        parameters: email, hashedString(password), authToken.stringValue, verificationCode, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated), dbStringFromDate(lastLogin)
       ).first {
         return try User(row: row)
       }
@@ -141,7 +142,7 @@ extension User {
           // lastLogin AND verificationCode
           if let row = try db().execute(
             "INSERT INTO users (email, password, auth_token, verification_code, is_active, access_level, nickname, timezone, language, face_recipe, date_created, last_login) VALUES (%@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@) RETURNING *",
-            parameters: email, hashString(password), authToken.stringValue, verificationCode, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated), dbStringFromDate(lastLogin)
+            parameters: email, hashedString(password), authToken.stringValue, verificationCode, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated), dbStringFromDate(lastLogin)
           ).first {
             return try User(row: row)
           }
@@ -149,7 +150,7 @@ extension User {
           // lastLogin ONLY
           if let row = try db().execute(
             "INSERT INTO users (email, password, auth_token, verification_code, is_active, access_level, nickname, timezone, language, face_recipe, date_created, last_login) VALUES (%@, %@, %@, NULL, %@, %@, %@, %@, %@, %@, %@, %@) RETURNING *",
-            parameters: email, hashString(password), authToken.stringValue, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated), dbStringFromDate(lastLogin)
+            parameters: email, hashedString(password), authToken.stringValue, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated), dbStringFromDate(lastLogin)
           ).first {
             return try User(row: row)
           }
@@ -158,7 +159,7 @@ extension User {
         // verificationCode ONLY
         if let row = try db().execute(
           "INSERT INTO users (email, password, auth_token, verification_code, is_active, access_level, nickname, timezone, language, face_recipe, date_created, last_login) VALUES (%@, %@, %@, %@, %@, %@, %@, %@, %@, %@, %@, NULL) RETURNING *",
-          parameters: email, hashString(password), authToken.stringValue, verificationCode, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated)
+          parameters: email, hashedString(password), authToken.stringValue, verificationCode, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated)
         ).first {
           return try User(row: row)
         }
@@ -166,7 +167,7 @@ extension User {
       // NEITHER
       if let row = try db().execute(
         "INSERT INTO users (email, password, auth_token, verification_code, is_active, access_level, nickname, timezone, language, face_recipe, date_created, last_login) VALUES (%@, %@, %@, NULL, %@, %@, %@, %@, %@, %@, %@, NULL) RETURNING *",
-        parameters: email, hashString(password), authToken.stringValue, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated)
+        parameters: email, hashedString(password), authToken.stringValue, isActive ? "t" : "f", accessLevel.rawValue, nickname, timezone, language, faceRecipe, dbStringFromDate(dateCreated)
       ).first {
         return try User(row: row)
       }
@@ -262,6 +263,48 @@ extension User {
     }
   }
 
+  public func editProfile(timezone: String, language: String, nickname: String) throws {
+    // Validate inputs
+    var invalidFields: [ValidationError] = []
+    // timezone
+    if timezone.characters.count > 40 {
+      invalidFields.append(ValidationError(fieldName: "timezone", failure: .Length))
+    }
+    // nickname
+    if nickname.characters.count > 40 {
+      invalidFields.append(ValidationError(fieldName: "nickname", failure: .Length))
+    }
+    if nickname.characters.filter({ User.validNicknameChars.contains($0) }).count != nickname.characters.count {
+      invalidFields.append(ValidationError(fieldName: "nickname", failure: .Characters))
+    }
+    if invalidFields.count > 0 {
+      throw User.Error.InvalidInput(fields: invalidFields)
+    }
+    // Save changes to the object
+    do {
+      try db().execute("UPDATE users SET timezone = %@, language = %@, nickname = %@ WHERE pk = %@", parameters: timezone, language, nickname, pk)
+    } catch let error {
+      throw OSSMCore.Error.UnhandledError(debugMessage: "Could not edit User's profile fields.", extra: error)
+    }
+  }
+
+  /// Set user's password.
+  public func changePassword(from oldPassword: String, to newPassword: String) throws {
+    if newPassword.characters.count < 8 {
+      throw User.Error.InvalidInput(fields: [ValidationError(fieldName: "password", failure: .Length)])
+    }
+    do {
+      if try db().execute("SELECT 1 FROM users WHERE pk = %@ AND password = %@", parameters: pk, hashedString(oldPassword)).count != 1 {
+        throw User.Error.Forbidden
+      }
+      try db().execute("UPDATE users SET password = %@ WHERE pk = %@", parameters: hashedString(newPassword), pk)
+    } catch User.Error.Forbidden {
+      throw User.Error.Forbidden
+    } catch let error {
+      throw OSSMCore.Error.UnhandledError(debugMessage: "Could not edit User's password.", extra: error)
+    }
+  }
+
   /// Set user as not active and generate a verification code to reactivate.
   public func requireVerification() throws {
     let code = AuthToken.generate().stringValue
@@ -281,7 +324,7 @@ extension User {
   Return a pk if the user's credentials are correct and the user is active.
   */
   public static func authenticateUser(withEmail email: String, password: String) throws -> Int? {
-    let passwordHash = hashString(password)
+    let passwordHash = hashedString(password)
     let result = try db().execute("SELECT pk FROM users WHERE email = %@ AND password = %@ AND is_active = TRUE", parameters: email, passwordHash)
     if let row = result.first {
       return try row.value("pk") as Int?
@@ -293,7 +336,7 @@ extension User {
   Return a pk if the user's credentials are correct and the user is active.
   */
   public static func authenticateUser(withPk pk: Int, password: String) throws -> Int? {
-    let passwordHash = hashString(password)
+    let passwordHash = hashedString(password)
     let result = try db().execute("SELECT pk FROM users WHERE pk = %@ AND password = %@ AND is_active = TRUE", parameters: pk, passwordHash)
     if let row = result.first {
       return try row.value("pk") as Int?

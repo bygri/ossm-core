@@ -19,5 +19,7 @@ func configureRoutes() {
   app.post("user/create", handler: userCreateView)
   app.post("user/regenerateToken", Int.self, handler: userRegenerateTokenView)
   app.post("user/verify", Int.self, handler: userVerifyView)
+  app.post("user/edit", handler: userEditProfileView)
+  app.post("user/changePassword", handler: userChangePasswordView)
 
 }

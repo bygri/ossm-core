@@ -10,6 +10,23 @@ class UserTests: XCTestCase {
     prepareTestDatabase()
   }
 
+  func createTestUser(email: String = "test@test.com", password: String = "apassword") throws -> User {
+    return try User.create(
+      withEmail: email,
+      password: password,
+      authToken: try AuthToken.generateUnique(),
+      verificationCode: nil,
+      isActive: true,
+      accessLevel: User.AccessLevel.User,
+      nickname: "testuser",
+      timezone: "Australia/Sydney",
+      language: "en-au",
+      faceRecipe: "",
+      dateCreated: NSDate(),
+      lastLogin: nil
+    )
+  }
+
   func testAuthToken() {
     // Init with a valid token string
     do {
@@ -152,20 +169,7 @@ class UserTests: XCTestCase {
       // Create an active user.
       let email = "test@test.com"
       let password = "apassword"
-      let user = try User.create(
-        withEmail: email,
-        password: password,
-        authToken: try AuthToken.generateUnique(),
-        verificationCode: nil,
-        isActive: true,
-        accessLevel: User.AccessLevel.User,
-        nickname: "testuser",
-        timezone: "Australia/Sydney",
-        language: "en-au",
-        faceRecipe: "",
-        dateCreated: NSDate(),
-        lastLogin: nil
-      )
+      let user = try createTestUser(email: email, password: password)
       // Try authentication
       XCTAssertNil(
         try User.authenticateUser(withEmail: "notyouremail@email.com", password: password),
@@ -192,23 +196,7 @@ class UserTests: XCTestCase {
 
   func testVerification() {
     do {
-      // Create an active user.
-      let email = "test@test.com"
-      let password = "apassword"
-      var user = try User.create(
-        withEmail: email,
-        password: password,
-        authToken: try AuthToken.generateUnique(),
-        verificationCode: nil,
-        isActive: true,
-        accessLevel: User.AccessLevel.User,
-        nickname: "testuser",
-        timezone: "Australia/Sydney",
-        language: "en-au",
-        faceRecipe: "",
-        dateCreated: NSDate(),
-        lastLogin: nil
-      )
+      var user = try createTestUser()
       XCTAssertTrue(user.isActive, "User should be active")
       // Now make them require verification and reload
       try user.requireVerification()
@@ -229,23 +217,7 @@ class UserTests: XCTestCase {
 
   func testRegenerateToken() {
     do {
-      // Create an active user.
-      let email = "test@test.com"
-      let password = "apassword"
-      var user = try User.create(
-        withEmail: email,
-        password: password,
-        authToken: try AuthToken.generateUnique(),
-        verificationCode: nil,
-        isActive: true,
-        accessLevel: User.AccessLevel.User,
-        nickname: "testuser",
-        timezone: "Australia/Sydney",
-        language: "en-au",
-        faceRecipe: "",
-        dateCreated: NSDate(),
-        lastLogin: nil
-      )
+      var user = try createTestUser()
       let oldToken = user.authToken
       let newTokenReturned = try user.regenerateToken()
       user = try User.get(withPk: user.pk)
@@ -253,6 +225,45 @@ class UserTests: XCTestCase {
       XCTAssertNotEqual(oldToken, newTokenReturned)
       XCTAssertNotEqual(oldToken, newTokenRetrieved)
       XCTAssertEqual(newTokenReturned, newTokenRetrieved)
+    } catch let error {
+      XCTFail("\(error)")
+    }
+  }
+
+  func testEditProfile() {
+    do {
+      var user = try createTestUser()
+      XCTAssertTrue(user.isActive, "User should be active")
+      // Now edit profile fields, reload, and see if they change
+      try user.editProfile(timezone: "Australia/Melbourne", language: "en-PIRAT", nickname: "Nicky")
+      user = try User.get(withPk: user.pk)
+      XCTAssertEqual(user.timezone, "Australia/Melbourne")
+      XCTAssertEqual(user.language, "en-PIRAT")
+      XCTAssertEqual(user.nickname, "Nicky")
+    } catch let error {
+      XCTFail("\(error)")
+    }
+  }
+
+  func testChangePassword() {
+    do {
+      let email = "test@test.com"
+      let user = try createTestUser(email: email, password: "password1")
+      XCTAssertNotNil(
+        try User.authenticateUser(withEmail: email, password: "password1")
+      )
+      // Fail to change the password
+      do {
+        try user.changePassword(from: "boggles", to: "password2")
+      } catch User.Error.Forbidden {}
+      // Change the password and re-authenticate
+      try user.changePassword(from: "password1", to: "password2")
+      XCTAssertNil(
+        try User.authenticateUser(withEmail: email, password: "password1")
+      )
+      XCTAssertNotNil(
+        try User.authenticateUser(withEmail: email, password: "password2")
+      )
     } catch let error {
       XCTFail("\(error)")
     }
@@ -274,6 +285,8 @@ extension UserTests {
       ("testAuthentication", testAuthentication),
       ("testVerification", testVerification),
       ("testRegenerateToken", testRegenerateToken),
+      ("testEditProfile", testEditProfile),
+      ("testChangePassword", testChangePassword),
     ]
   }
 }
