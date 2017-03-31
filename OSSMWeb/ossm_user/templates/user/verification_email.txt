@@ -1,7 +1,0 @@
-This email is verifying your OSSM account with email {{ email }}.
-
-If this was you, please follow the link below to continue:
-
-{{ protocol }}://{{ domain }}{% url "user:verify" %}?code={{ code }}&pk={{ pk }}
-
-Otherwise, you can safely ignore this message.
