@@ -1,12 +1,12 @@
 
 public struct Date {
-  let year: Int
-  let day: Int
-  let hour: Int
-  let minute: Int
-  let second: Int
+  var year: Int
+  var day: Int
+  var hour: Int
+  var minute: Int
+  var second: Int
 
-  func addSecond() {
+  mutating func addSecond() {
     second += 1
 
     if second >= 60 {

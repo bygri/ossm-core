@@ -14,14 +14,16 @@ public final class Timeline {
   // private init so Timeline is only used as a singleton instance
   private init() {
     gameDate = Date(year: 0, day: 0, hour: 0, minute: 0, second: 0)
-    timer = Timer(timeInterval: 1, target: gameDate, selector: #selector(Timeline.timerTick), userInfo: nil, repeats: true)
+    timer = Timer(timeInterval: 1, repeats: true) { timer in
+       Timeline.sharedInstance.timerTick()
+    }
   }
 
   private var gameDate: Date
   private var timer: Timer
 
   /// tick the timer every second to add a second to the game time
-  dynamic func timerTick() {
+  func timerTick() {
     gameDate.addSecond()
 
     // TODO: add any other date time events here (ie. games every 7 days, training every day at certain hour etc.)
