@@ -8,5 +8,6 @@ let package = Package(
     Target(name: "Calendar"),
     Target(name: "Localization"),
     Target(name: "Geography", dependencies: ["Localization"]),
+    Target(name: "Population", dependencies: ["Geography"]),
   ]
 )
