@@ -67,3 +67,10 @@ extension Location: Equatable {
     return lhs === rhs
   }
 }
+
+// TODO: Remove or replace this once we have proper primary keys
+extension Location: Hashable {
+  public var hashValue: Int {
+    return name.hashValue
+  }
+}
