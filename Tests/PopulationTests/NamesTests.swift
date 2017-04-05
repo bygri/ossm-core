@@ -1,5 +1,6 @@
 import XCTest
 import Geography
+import Random
 @testable import Population
 
 class NamesTests: XCTestCase {
@@ -18,7 +19,7 @@ class NamesTests: XCTestCase {
     XCTAssertEqual(combined.lastNames, ["ONE", "TWO"])
   }
 
-  func testParentLocationNamesLists() {
+  func testParentLocationNamesLists() throws {
     // Create the geography
     let root = Location(name: "ROOT", parent: nil)
     let leaf = Location(name: "LEAF", parent: root)
@@ -26,7 +27,7 @@ class NamesTests: XCTestCase {
     let generator = NameGenerator(namesTable: [
       root: NamesList(firstNames: ["one"], lastNames: ["ONE"]),
       leaf: NamesList(firstNames: ["two"], lastNames: ["TWO"])
-    ])
+    ], randomGenerator: try URandom())
     // Get the concatenated list
     let combined = generator.namesList(for: leaf)
     XCTAssertEqual(combined.firstNames, ["two", "one"])
@@ -42,9 +43,10 @@ class NamesTests: XCTestCase {
         firstNames: ["fred", "bob", "bill"],
         lastNames: ["smith"]
       ),
-    ])
+    ], randomGenerator: try URandom())
     // Generate a name
     let name = try generator.generate(for: root)
+    print("Name: \(name)")
     XCTAssertTrue(["fred", "bob", "bill"].contains(name.first))
     XCTAssertEqual("smith", name.last)
   }

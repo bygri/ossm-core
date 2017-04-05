@@ -1,4 +1,5 @@
 import Geography
+import Random
 
 /**
   Generates names for Sims.
@@ -15,14 +16,17 @@ public class NameGenerator {
 
   let namesTable: [Location: NamesList]
 
-  public init(namesTable: [Location: NamesList]) {
+  let randomGenerator: RandomProtocol
+
+  public init(namesTable: [Location: NamesList], randomGenerator: RandomProtocol) {
     self.namesTable = namesTable
+    self.randomGenerator = randomGenerator
   }
 
   public func generate(for location: Location) throws -> Name {
     // Choose a random name from the concatenated NamesLists of this location
     // and all parent locations.
-    return try namesList(for: location).random()
+    return try namesList(for: location).random(using: randomGenerator)
   }
 
   func namesList(for location: Location) -> NamesList {
