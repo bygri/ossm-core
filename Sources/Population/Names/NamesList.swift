@@ -16,17 +16,6 @@ public struct NamesList {
     self.lastNames = lastNames
   }
 
-  func random() throws -> Name {
-    // TODO: This should use whatever random number generator we choose.
-    guard
-      let firstName = firstNames.first,
-      let lastName = lastNames.first
-    else {
-      throw NameError.emptyNameList
-    }
-    return Name(first: firstName, last: lastName)
-  }
-
 }
 
 
