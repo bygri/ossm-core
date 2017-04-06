@@ -21,22 +21,24 @@ class NamesTests: XCTestCase {
 
   func testParentLocationNamesLists() throws {
     // Create the geography
-    let root = Location(name: "ROOT", parent: nil)
-    let leaf = Location(name: "LEAF", parent: root)
+    let leafLocation = try Location(id: 1, name: "LEAF")
+    let rootLocation = try Location(id: 0, name: "ROOT", children: [
+      leafLocation
+    ])
     // Create the generator
     let generator = NameGenerator(namesTable: [
-      root: NamesList(firstNames: ["one"], lastNames: ["ONE"]),
-      leaf: NamesList(firstNames: ["two"], lastNames: ["TWO"])
+      rootLocation: NamesList(firstNames: ["one"], lastNames: ["ONE"]),
+      leafLocation: NamesList(firstNames: ["two"], lastNames: ["TWO"])
     ], randomGenerator: try URandom())
     // Get the concatenated list
-    let combined = generator.namesList(for: leaf)
+    let combined = generator.namesList(for: leafLocation)
     XCTAssertEqual(combined.firstNames, ["two", "one"])
     XCTAssertEqual(combined.lastNames, ["TWO", "ONE"])
   }
 
   func testGenerateName() throws {
     // Create the geography
-    let root = Location(name: "ROOT", parent: nil)
+    let root = try Location(id: 0, name: "ROOT")
     // Create the generator
     let generator = NameGenerator(namesTable: [
       root: NamesList(

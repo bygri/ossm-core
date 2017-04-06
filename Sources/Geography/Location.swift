@@ -5,19 +5,52 @@ import Localization
 
   Defined as a tree structure.
 
-  The map of Locations is held in memory.
+  After building up your locations tree, call `Location.buildIndex(fromRoot:)`
+  with the root location to build the lookup index. This will allow you to use
+  `Location.fetch(at:)` to get locations by id number, along with standard
+  traversal properties such as `parent` and `children`.
 */
 public final class Location {
 
+  public enum Error: Swift.Error {
+    case duplicateLocationId(Int)
+    case locationIdDoesNotExist(Int)
+    case noIndex
+  }
+
+  static var index: [Int: Location]? = nil
+
+  public let id: Int
   public let name: TranslatableString
   public weak var parent: Location?
-  public var children: [Location] = []
+  public let children: [Location]
 
-  public init(name: String, parent: Location?) {
+  public init(id: Int, name: TranslatableString, children: [Location] = []) throws {
+    self.id = id
     self.name = name
-    if let parent = parent {
-      parent.add(child: self)
+    self.children = children
+    children.forEach { $0.parent = self }
+  }
+
+  static func fetch(at id: Int) throws -> Location {
+    guard let index = index else {
+      throw Error.noIndex
     }
+    guard let loc = index[id] else {
+      throw Error.locationIdDoesNotExist(id)
+    }
+    return loc
+  }
+
+  static func buildIndex(fromRoot root: Location) throws {
+    index = try ([root] + root.allChildren).reduce([:]) { acc, loc in
+      var index = acc
+      guard index[loc.id] == nil else {
+        throw Error.duplicateLocationId(loc.id)
+      }
+      index[loc.id] = loc
+      return index
+    } as [Int: Location]
   }
 
   /*
@@ -33,6 +66,17 @@ public final class Location {
   public var allParents: [Location] {
     guard let parent = parent else { return [] }
     return [parent] + parent.allParents
+  }
+
+  /*
+    An array of all child Locations in no particular order.
+  */
+  public var allChildren: [Location] {
+    return children.reduce([]) {
+      $1.isTerminal ?
+        $0 + [$1] :
+        $0 + [$1] + $1.allChildren
+    }
   }
 
   /*
@@ -53,12 +97,6 @@ public final class Location {
     return children.isEmpty
   }
 
-  /// Add a child Location to this Location.
-  func add(child: Location) {
-    child.parent = self
-    children.append(child)
-  }
-
 }
 
 
@@ -68,9 +106,9 @@ extension Location: Equatable {
   }
 }
 
-// TODO: Remove or replace this once we have proper primary keys
+
 extension Location: Hashable {
   public var hashValue: Int {
-    return name.hashValue
+    return id
   }
 }

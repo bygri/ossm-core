@@ -6,10 +6,20 @@ import XCTest
 @testable import PopulationTests
 
 XCTMain([
+
+  // Calendar
   testCase(CalendarTests.allTests),
+
+  // Configuration
   testCase(ConfigurationTests.allTests),
-  testCase(GeographyTests.allTests),
+
+  // Geography
+  testCase(LocationTests.allTests),
+
+  // Localization
   testCase(LocalizationTests.allTests),
+
   // Population
   testCase(NamesTests.allTests),
+
 ])
