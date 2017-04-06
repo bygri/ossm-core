@@ -2,6 +2,7 @@ import Calendar
 import Geography
 import Population
 import Random
+import Fluent
 
 /*
   Service container for an OSSM instance. Brings together all related classes.
@@ -12,6 +13,9 @@ public final class OSSM {
 
   /// The name of this instance.
   public let name: String
+
+  /// Database for this instance.
+  public let database: Database
 
   /// The instance's timeline.
   public let timeline = Timeline()
@@ -27,11 +31,13 @@ public final class OSSM {
 
   public init(
     name: String,
+    database: Database,
     rootLocation: Location,
     nameGenerator: NameGenerator,
     random: RandomProtocol?
   ) throws {
     self.name = name
+    self.database = database
     self.rootLocation = rootLocation
     self.nameGenerator = nameGenerator
     self.random = try random ?? URandom()
