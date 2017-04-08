@@ -15,12 +15,14 @@ public final class Manager: Entity {
   public init(row: Row) throws {
     displayName = try row.get("display_name")
     email = try row.get("email")
+    id = try row.get(idKey)
   }
 
   public func makeRow() throws -> Row {
     var row = Row()
     try row.set("display_name", displayName)
     try row.set("email", email)
+    try row.set(idKey, id)
     return row
   }
 

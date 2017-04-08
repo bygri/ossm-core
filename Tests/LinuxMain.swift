@@ -16,6 +16,7 @@ XCTMain([
   testCase(LocalizationTests.allTests),
 
   // Models
+  testCase(ClubTests.allTests),
   testCase(PersistenceTests.allTests),
 
   // Population

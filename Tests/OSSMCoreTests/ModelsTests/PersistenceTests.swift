@@ -20,6 +20,9 @@ class PersistenceTests: XCTestCase {
       XCTFail()
       return
     }
+    // Add some decoy entities
+    try TestEntity(name: "john").save()
+    try TestEntity(name: "stephen").save()
     // Get the entity
     guard let fetched = try TestEntity.find(id) else {
       XCTFail()
