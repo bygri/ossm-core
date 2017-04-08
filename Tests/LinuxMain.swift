@@ -1,15 +1,21 @@
 import XCTest
-@testable import CalendarTests
-@testable import ConfigurationTests
-@testable import GeographyTests
-@testable import LocalizationTests
-@testable import PopulationTests
+@testable import OSSMCoreTests
 
 XCTMain([
+
+  // Calendar
   testCase(CalendarTests.allTests),
+
+  // Configuration
   testCase(ConfigurationTests.allTests),
+
+  // Geography
   testCase(GeographyTests.allTests),
+
+  // Localization
   testCase(LocalizationTests.allTests),
+
   // Population
   testCase(NamesTests.allTests),
+
 ])

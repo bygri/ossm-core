@@ -1,5 +1,5 @@
 import XCTest
-@testable import Geography
+@testable import OSSMCore
 
 class GeographyTests: XCTestCase {
 

@@ -1,5 +1,5 @@
 import XCTest
-@testable import Configuration
+@testable import OSSMCore
 
 class ConfigurationTests: XCTestCase {
 

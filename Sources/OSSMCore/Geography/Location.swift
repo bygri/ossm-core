@@ -1,5 +1,3 @@
-import Localization
-
 /*
   A geographical location.
 
