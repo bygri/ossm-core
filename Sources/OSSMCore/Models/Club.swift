@@ -4,9 +4,7 @@ public final class Club: Entity {
 
   public var displayName: String
 
-  // public var manager: Manager
   public var managerId: Identifier
-  // public var location: Location
   public var locationId: Int
 
   public var primaryColor: Color
@@ -15,22 +13,16 @@ public final class Club: Entity {
 
   public let storage = Storage()
 
-  // public var manager: Manager {
-  //   get {
-  //     return parent(managerId)
-  //   }
-  //   set {
-  //     managerId = newValue.id
-  //   }
-  // }
-
   public func manager() throws -> Parent<Club, Manager> {
     return parent(id: managerId)
   }
 
-  // public func location() throws -> Location {
-  //   // return try Location.find(locationId)
-  // }
+  public func location() throws -> Location {
+    guard let loc = try Location.find(locationId) else {
+      throw Location.Error.notFound(locationId)
+    }
+    return loc
+  }
 
   public init(
     displayName: String,

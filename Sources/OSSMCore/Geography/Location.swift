@@ -13,6 +13,7 @@ public final class Location {
   public enum Error: Swift.Error {
     case duplicateLocationId(Int)
     case noIndex
+    case notFound(Int)
   }
 
   static var index: [Int: Location]? = nil
