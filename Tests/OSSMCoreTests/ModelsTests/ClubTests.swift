@@ -14,9 +14,11 @@ class ClubTests: XCTestCase {
     try Club.prepare(database)
     try Manager.prepare(database)
     // Create a club
+    let location = try Location(id: 0, name: "location")
+    try Location.buildIndex(fromRoot: location)
     let manager = Manager(displayName: "manager", email: "email@email.com")
     try manager.save()
-    let club = Club(displayName: "club1", manager: manager, primaryColor: try Color("FFFFFF"), secondaryColor: try Color("FFFFFF"), tertiaryColor: try Color("FFFFFF"))
+    let club = Club(displayName: "club1", managerId: manager.id!, locationId: 0, primaryColor: try Color("FFFFFF"), secondaryColor: try Color("FFFFFF"), tertiaryColor: try Color("FFFFFF"))
     try club.save()
     // Fetch again
     guard let id = club.id, let fetched = try Club.find(id) else {
@@ -25,7 +27,7 @@ class ClubTests: XCTestCase {
     }
     XCTAssertEqual(fetched.displayName, "club1")
     // Get manager
-    XCTAssertEqual(fetched.manager.displayName, "manager")
+    XCTAssertEqual(try fetched.manager().get()?.displayName, "manager")
   }
 
 }

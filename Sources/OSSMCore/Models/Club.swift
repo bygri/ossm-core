@@ -4,8 +4,8 @@ public final class Club: Entity {
 
   public var displayName: String
 
-  public var manager: Manager
-  // public var location: Location
+  public var managerId: Identifier
+  public var locationId: Int
 
   public var primaryColor: Color
   public var secondaryColor: Color
@@ -13,17 +13,28 @@ public final class Club: Entity {
 
   public let storage = Storage()
 
+  public func manager() throws -> Parent<Club, Manager> {
+    return parent(id: managerId)
+  }
+
+  public func location() throws -> Location {
+    guard let loc = try Location.find(locationId) else {
+      throw Location.Error.notFound(locationId)
+    }
+    return loc
+  }
+
   public init(
     displayName: String,
-    manager: Manager,
-    // location: Location,
+    managerId: Identifier,
+    locationId: Int,
     primaryColor: Color,
     secondaryColor: Color,
     tertiaryColor: Color
   ) {
     self.displayName = displayName
-    self.manager = manager
-    // self.location = location
+    self.managerId = managerId
+    self.locationId = locationId
     self.primaryColor = primaryColor
     self.secondaryColor = secondaryColor
     self.tertiaryColor = tertiaryColor
@@ -31,8 +42,8 @@ public final class Club: Entity {
 
   public init(row: Row) throws {
     displayName = try row.get("display_name")
-    manager = try Manager.find(row.get("manager_id") as Int)!
-    // location = try Location.find(row.get("location_id"))
+    managerId = try row.get("manager_id")
+    locationId = try row.get("location_id")
     primaryColor = try row.get("primary_color")
     secondaryColor = try row.get("secondary_color")
     tertiaryColor = try row.get("tertiary_color")
@@ -42,8 +53,8 @@ public final class Club: Entity {
   public func makeRow() throws -> Row {
     var row = Row()
     try row.set("display_name", displayName)
-    try row.set("manager_id", manager.id)
-    // try row.set("location_id", location)
+    try row.set("manager_id", managerId)
+    try row.set("location_id", locationId)
     try row.set("primary_color", primaryColor)
     try row.set("secondary_color", secondaryColor)
     try row.set("tertiary_color", tertiaryColor)
@@ -61,7 +72,7 @@ extension Club: Preparation {
       t.id(for: self)
       t.string("display_name")
       t.foreignId(for: Manager.self)
-      // t.int("location_id")
+      t.int("location_id")
       t.string("primary_color", length: 6)
       t.string("secondary_color", length: 6)
       t.string("tertiary_color", length: 6)
