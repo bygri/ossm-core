@@ -38,6 +38,8 @@ public final class OSSM {
     self.rootLocation = rootLocation
     self.nameGenerator = nameGenerator
     self.random = try random ?? URandom()
+    // Index locations
+    try Location.buildIndex(fromRoot: rootLocation)
     // Models
     try Manager.prepare(database)
   }
