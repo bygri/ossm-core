@@ -40,6 +40,7 @@ public final class OSSM {
     self.random = try random ?? URandom()
     // Models
     try Manager.prepare(database)
+    try Club.prepare(database)
     // Index locations
     try Location.buildIndex(fromRoot: rootLocation)
   }
