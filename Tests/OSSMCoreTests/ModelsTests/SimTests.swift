@@ -13,7 +13,7 @@ class SimTests: XCTestCase {
     let database = Database(driver)
     try Sim.prepare(database)
     // Create a sim
-    let sim = Sim(firstName: "first", lastName: "last", nickName: "nick",
+    let sim = Sim(firstName: "first", lastName: "last", nickName: "nick", birthDate: Date(seconds: 0),
                 birthLocation: try Location(id: 1, name: "birth"), location: try Location(id: 2, name: "current"),
                 leadership: 5, agility: 5, fame: 5)
     try sim.save()

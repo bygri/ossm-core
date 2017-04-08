@@ -5,6 +5,7 @@ public final class Sim: Entity {
   public var firstName: String
   public var lastName: String
   public var nickName: String?
+  public var birthDate: Date
   // public var birthLocation: Location
   // public var location: Location
 
@@ -15,12 +16,13 @@ public final class Sim: Entity {
 
   public let storage = Storage()
 
-  public init(firstName: String, lastName: String, nickName: String?,
+  public init(firstName: String, lastName: String, nickName: String?, birthDate: Date,
               birthLocation: Location, location: Location, leadership: Int, agility: Int,
               fame: Int) {
     self.firstName = firstName
     self.lastName = lastName
     self.nickName = nickName
+    self.birthDate = birthDate
     // self.birthLocation = birthLocation
     // self.location = location
     self.leadership = leadership
@@ -32,6 +34,7 @@ public final class Sim: Entity {
     firstName = try row.get("first_name")
     lastName = try row.get("last_name")
     nickName = try row.get("nick_name")
+    birthDate = try Date(seconds: row.get("birth_date"))
     // birthLocation = try Location.find(row.get("birth_location_id"))
     // location = try Location.find(row.get("location_id"))
     leadership = try row.get("leadership")
@@ -45,6 +48,7 @@ public final class Sim: Entity {
     try row.set("first_name", firstName)
     try row.set("last_name", lastName)
     try row.set("nick_name", nickName)
+    try row.set("birth_date", birthDate.toSeconds())
     // try row.set("birth_location_id", birthLocation.id)
     // try row.set("location_id", location.id)
     try row.set("leadership", leadership)
@@ -64,6 +68,7 @@ extension Sim: Preparation {
       t.string("first_name")
       t.string("last_name")
       t.string("nick_name")
+      t.int("birth_date")
       // t.int("birth_location_id")
       // t.int("location_id")
       t.int("leadership")
