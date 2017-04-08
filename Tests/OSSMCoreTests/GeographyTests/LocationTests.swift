@@ -62,15 +62,19 @@ class LocationTests: XCTestCase {
           Location(id: 5, name: "2-1"),
         ])
     ])
-    try Location.buildIndex(fromRoot: rootLocation)
-    XCTAssertEqual(try Location.fetch(at: 3).name, "1-2")
+    // Lookup without an index fails
     do {
-      let _ = try Location.fetch(at: 99)
-      XCTFail("No error thrown")
-    } catch Location.Error.locationIdDoesNotExist {
+      let _ = try Location.find(3)
+    } catch Location.Error.noIndex {
     } catch {
       XCTFail("Wrong error thrown")
+      return
     }
+    // Lookup of an existing Location succeeds
+    try Location.buildIndex(fromRoot: rootLocation)
+    XCTAssertEqual(try Location.find(3)?.name, "1-2")
+    // Lookup of a non-existent Location fails
+    XCTAssertNil(try Location.find(99))
   }
 
 }

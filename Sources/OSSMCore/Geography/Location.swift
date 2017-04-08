@@ -1,4 +1,4 @@
-/*
+/**
   A geographical location.
 
   Defined as a tree structure.
@@ -12,7 +12,6 @@ public final class Location {
 
   public enum Error: Swift.Error {
     case duplicateLocationId(Int)
-    case locationIdDoesNotExist(Int)
     case noIndex
   }
 
@@ -30,16 +29,30 @@ public final class Location {
     children.forEach { $0.parent = self }
   }
 
-  static func fetch(at id: Int) throws -> Location {
+  /**
+    Return the Location with the given ID number, or `nil` if there is no
+    Location by that ID.
+
+    May throw `Location.Error.noIndex` if `Location.buildIndex(fromRoot:)` has
+    not yet been called.
+  */
+  static func find(_ id: Int) throws -> Location? {
     guard let index = index else {
       throw Error.noIndex
     }
     guard let loc = index[id] else {
-      throw Error.locationIdDoesNotExist(id)
+      return nil
     }
     return loc
   }
 
+  /**
+    Build up the internal index of IDs to Locations. Call this after all
+    Locations have been instantiated. The root Location must be passed in.
+
+    May throw `Location.Error.duplicateLocationId` if a location ID has been
+    used more than once in the Location tree.
+  */
   static func buildIndex(fromRoot root: Location) throws {
     index = try ([root] + root.allChildren).reduce([:]) { acc, loc in
       var index = acc
@@ -51,7 +64,7 @@ public final class Location {
     } as [Int: Location]
   }
 
-  /*
+  /**
     An array of the parents of this Location, all the way back to the root.
 
     The first element is this Location's immediate parent, the second is the
@@ -66,7 +79,7 @@ public final class Location {
     return [parent] + parent.allParents
   }
 
-  /*
+  /**
     An array of all child Locations in no particular order.
   */
   public var allChildren: [Location] {
@@ -77,7 +90,7 @@ public final class Location {
     }
   }
 
-  /*
+  /**
     An array of all child Locations which do not themselves have children.
   */
   public var allTerminalChildren: [Location] {
@@ -88,7 +101,7 @@ public final class Location {
     }
   }
 
-  /*
+  /**
     True if the Location has no child Locations.
   */
   public var isTerminal: Bool {
