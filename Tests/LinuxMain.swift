@@ -10,7 +10,7 @@ XCTMain([
   testCase(ConfigurationTests.allTests),
 
   // Geography
-  testCase(GeographyTests.allTests),
+  testCase(LocationTests.allTests),
 
   // Localization
   testCase(LocalizationTests.allTests),
