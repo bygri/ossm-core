@@ -1,6 +1,3 @@
-import Calendar
-import Geography
-import Population
 import Random
 
 /*

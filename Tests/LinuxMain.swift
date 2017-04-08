@@ -1,9 +1,5 @@
 import XCTest
-@testable import CalendarTests
-@testable import ConfigurationTests
-@testable import GeographyTests
-@testable import LocalizationTests
-@testable import PopulationTests
+@testable import OSSMCoreTests
 
 XCTMain([
 

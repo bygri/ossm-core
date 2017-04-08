@@ -1,7 +1,6 @@
 import XCTest
-import Geography
 import Random
-@testable import Population
+@testable import OSSMCore
 
 class NamesTests: XCTestCase {
 
@@ -48,7 +47,6 @@ class NamesTests: XCTestCase {
     ], randomGenerator: try URandom())
     // Generate a name
     let name = try generator.generate(for: root)
-    print("Name: \(name)")
     XCTAssertTrue(["fred", "bob", "bill"].contains(name.first))
     XCTAssertEqual("smith", name.last)
   }
