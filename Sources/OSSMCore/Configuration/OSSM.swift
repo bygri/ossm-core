@@ -38,6 +38,8 @@ public final class OSSM {
     self.rootLocation = rootLocation
     self.nameGenerator = nameGenerator
     self.random = try random ?? URandom()
+    // Models
+    try Manager.prepare(database)
   }
 
 }
