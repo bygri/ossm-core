@@ -52,4 +52,12 @@ public struct Date {
       day = 0
     }
   }
+
+  func toSeconds() -> Int {
+    return year * daysPerYear * 86400 +
+            day * 86400 +
+            hour * 3600 +
+            minute * 60 +
+            second
+  }
 }
