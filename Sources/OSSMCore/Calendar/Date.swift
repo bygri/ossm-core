@@ -1,8 +1,6 @@
 
 public struct Date {
 
-  let daysPerYear: Int = 365
-
   var year: Int
   var day: Int
   var hour: Int
@@ -25,8 +23,8 @@ public struct Date {
     day = hour / 24
     hour = hour % 24
 
-    year = day / daysPerYear
-    day = day % daysPerYear
+    year = day / Timeline.daysPerYear
+    day = day % Timeline.daysPerYear
   }
 
   mutating func addSecond() {
@@ -47,15 +45,15 @@ public struct Date {
       hour = 0
     }
 
-    if day >= daysPerYear {
+    if day >= Timeline.daysPerYear {
       year += 1
       day = 0
     }
   }
 
   func toSeconds() -> Int {
-    return year * daysPerYear * 86400 +
-            day * 86400 +
+    return year * Timeline.daysPerYear * 24 * 3600 +
+            day * 24 * 3600 +
             hour * 3600 +
             minute * 60 +
             second
