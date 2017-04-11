@@ -7,6 +7,8 @@ import Foundation
 */
 public final class Timeline {
 
+  static let daysPerYear: Int = 365
+
   public init() {
     gameDate = Date(year: 0, day: 0, hour: 0, minute: 0, second: 0)
     timer = Timer(timeInterval: 1, repeats: true) { [weak self] timer in
