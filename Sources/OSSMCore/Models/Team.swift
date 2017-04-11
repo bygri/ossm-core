@@ -28,22 +28,28 @@ public final class Team: Entity {
   /// may play in the team.
   public var locationId: Int
 
+  /// Current bank balance
+  public var cashOnHand: Int
+
   public let storage = Storage()
 
   public init(
     displayName: String,
     clubId: Identifier?,
-    locationId: Int
+    locationId: Int,
+    cashOnHand: Int
   ) {
     self.displayName = displayName
     self.clubId = clubId
     self.locationId = locationId
+    self.cashOnHand = cashOnHand
   }
 
   public init(row: Row) throws {
     displayName = try row.get("display_name")
     clubId = try row.get("club_id")
     locationId = try row.get("location_id")
+    cashOnHand = try row.get("cash_on_hand")
   }
 
   public func makeRow() throws -> Row {
@@ -51,6 +57,7 @@ public final class Team: Entity {
     try row.set("display_name", displayName)
     try row.set("club_id", clubId)
     try row.set("location_id", locationId)
+    try row.set("cash_on_hand", cashOnHand)
     try row.set(idKey, id)
     return row
   }
@@ -65,6 +72,7 @@ extension Team: Preparation {
       t.string("display_name")
       t.foreignId(for: Club.self)
       t.int("location_id")
+      t.int("cash_on_hand")
     }
   }
 
