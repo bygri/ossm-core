@@ -52,6 +52,15 @@ public final class Transaction: Entity {
     return row
   }
 
+  public func didCreate() {
+    // If the transaction affected cash on hand, recalculate cash on hand.
+    if creditAccount == .cashOnHand || debitAccount == .cashOnHand {
+      // REVIEW: `didCreate()` cannot throw, but `team().get()` can throw.
+      // This is a wishy-washy 'silent fail'.
+      try? team().get()?.recalculateCashOnHand()
+    }
+  }
+
 }
 
 extension Transaction: Preparation {

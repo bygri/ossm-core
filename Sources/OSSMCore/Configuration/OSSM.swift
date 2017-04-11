@@ -39,10 +39,12 @@ public final class OSSM {
     self.nameGenerator = nameGenerator
     self.random = try random ?? URandom()
     // Models
-    try Manager.prepare(database)
     try Club.prepare(database)
-    try Team.prepare(database)
+    try Manager.prepare(database)
     try ManagerTeamAccess.prepare(database)
+    try Sim.prepare(database)
+    try Team.prepare(database)
+    try Transaction.prepare(database)
     // Index locations
     try Location.buildIndex(fromRoot: rootLocation)
   }

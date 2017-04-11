@@ -1,3 +1,12 @@
+/**
+  OSSM's standard chart of accounts.
+
+  Remember, to increase the balance of an account use:
+  - a debit for an asset
+  - a credit for a liability
+  - a credit for revenue
+  - a debit for an expense
+*/
 public enum Account: Int {
   // Assets
   /// Current

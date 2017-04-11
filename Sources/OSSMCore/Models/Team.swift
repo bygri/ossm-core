@@ -28,7 +28,8 @@ public final class Team: Entity {
   /// may play in the team.
   public var locationId: Int
 
-  /// Current bank balance
+  /// Current bank balance, inverted such that a positive value here means the
+  /// team has a positive amount of cash to spend.
   public var cashOnHand: Int
 
   public let storage = Storage()
@@ -74,7 +75,10 @@ extension Team: Preparation {
     try database.create(self) { t in
       t.id(for: self)
       t.string("display_name")
-      t.foreignId(for: Club.self)
+      // TODO: use below syntax instead of t.parent() when foreignId can be optional
+      // https://github.com/vapor/fluent/pull/228
+      // t.foreignId(for: Club.self, optional: true)
+      t.parent(idKey: "club_id", idType: Club.idType, optional: true)
       t.int("location_id")
       t.int("cash_on_hand")
     }
