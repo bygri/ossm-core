@@ -23,6 +23,14 @@ public final class ManagerTeamAccess: Entity {
 
   public let storage = Storage()
 
+  public func manager() throws -> Parent<ManagerTeamAccess, Manager> {
+    return parent(id: managerId)
+  }
+
+  public func team() throws -> Parent<ManagerTeamAccess, Team> {
+    return parent(id: teamId)
+  }
+
   public init(
     managerId: Identifier,
     teamId: Identifier,

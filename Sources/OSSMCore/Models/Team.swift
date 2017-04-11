@@ -33,6 +33,10 @@ public final class Team: Entity {
 
   public let storage = Storage()
 
+  public func club() throws -> Parent<Team, Club> {
+    return parent(id: clubId)
+  }
+
   public init(
     displayName: String,
     clubId: Identifier?,

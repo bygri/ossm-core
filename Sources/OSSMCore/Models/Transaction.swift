@@ -15,6 +15,10 @@ public final class Transaction: Entity {
 
   public let storage = Storage()
 
+  public func team() throws -> Parent<Transaction, Team> {
+    return parent(id: teamId)
+  }
+
   public init(
     teamId: Identifier,
     date: Date,
