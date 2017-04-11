@@ -20,6 +20,7 @@ XCTMain([
   testCase(PersistenceTests.allTests),
   // Utilities
   testCase(ColorTests.allTests),
+  testCase(NodeConvertibleEnumTests.allTests),
 
   // Population
   testCase(NamesTests.allTests),

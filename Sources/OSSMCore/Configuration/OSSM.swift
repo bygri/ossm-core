@@ -41,6 +41,8 @@ public final class OSSM {
     // Models
     try Manager.prepare(database)
     try Club.prepare(database)
+    try Team.prepare(database)
+    try ManagerTeamAccess.prepare(database)
     // Index locations
     try Location.buildIndex(fromRoot: rootLocation)
   }
