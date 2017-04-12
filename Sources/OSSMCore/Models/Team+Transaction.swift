@@ -10,10 +10,10 @@ extension Team {
     // TODO: this is a good candidate for improving once Fluent's API has settled.
     // Hopefully there is a method for summing this in the DB, otherwise we go
     // with direct SQL.
-    var balance = try Transaction.query().filter("team_id", id).filter("credit_account", account.rawValue).all().reduce(0) { acc, t in
+    var balance = try Transaction.makeQuery().filter("team_id", id).filter("credit_account", account.rawValue).all().reduce(0) { acc, t in
       return acc + t.amount
     }
-    balance = try Transaction.query().filter("team_id", id).filter("debit_account", account.rawValue).all().reduce(balance) { acc, t in
+    balance = try Transaction.makeQuery().filter("team_id", id).filter("debit_account", account.rawValue).all().reduce(balance) { acc, t in
       return acc - t.amount
     }
     return balance
