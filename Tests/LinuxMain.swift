@@ -18,8 +18,10 @@ XCTMain([
   // Models
   testCase(ClubTests.allTests),
   testCase(PersistenceTests.allTests),
+  testCase(TransactionTests.allTests),
   // Utilities
   testCase(ColorTests.allTests),
+  testCase(NodeConvertibleEnumTests.allTests),
 
   // Population
   testCase(NamesTests.allTests),

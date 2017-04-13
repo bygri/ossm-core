@@ -109,6 +109,20 @@ public final class Location {
     return children.isEmpty
   }
 
+  /**
+    True if `child` is a sub-location of this Location.
+  */
+  public func contains(_ child: Location) -> Bool {
+    return child.allParents.index(of: self) != nil
+  }
+
+  /**
+    True if `parent` is a parent of this Location.
+  */
+  public func isChild(of parent: Location) -> Bool {
+    return allParents.index(of: parent) != nil
+  }
+
 }
 
 
