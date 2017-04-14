@@ -6,9 +6,11 @@ public enum NodeConvertibleEnumError: Swift.Error {
 
 protocol NodeConvertibleEnum: NodeConvertible {
 
-  var rawValue: Int { get }
+  associatedtype RawValueType: NodeConvertible
 
-  init?(rawValue: Int)
+  var rawValue: RawValueType { get }
+
+  init?(rawValue: RawValueType)
   init(node: Node) throws
 
   func makeNode(in context: Context?) throws -> Node
@@ -18,7 +20,7 @@ protocol NodeConvertibleEnum: NodeConvertible {
 extension NodeConvertibleEnum {
 
   public init(node: Node) throws {
-    let raw: Int = try node.get()
+    let raw: RawValueType = try node.get()
     guard let c = Self(rawValue: raw) else {
       throw NodeConvertibleEnumError.invalidEnumValue(enum: Self.self, value: raw)
     }
@@ -26,7 +28,7 @@ extension NodeConvertibleEnum {
   }
 
   public func makeNode(in context: Context?) throws -> Node {
-    return Node(rawValue)
+    return try rawValue.makeNode(in: context)
   }
 
 }

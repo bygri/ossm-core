@@ -1,1 +1,3 @@
-extension Account: NodeConvertibleEnum {}
+extension Account: NodeConvertibleEnum {
+  typealias RawValueType = Int
+}
