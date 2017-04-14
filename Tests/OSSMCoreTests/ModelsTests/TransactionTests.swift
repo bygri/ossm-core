@@ -14,6 +14,7 @@ class TransactionTests: XCTestCase {
     let database = Database(driver)
     try Team.prepare(database)
     try Transaction.prepare(database)
+    try Club.prepare(database)
     // Create a team
     let team = Team(displayName: "Team", clubId: nil, locationId: 0, cashOnHand: 0)
     try team.save()

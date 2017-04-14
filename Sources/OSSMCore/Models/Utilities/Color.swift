@@ -18,7 +18,7 @@ public struct Color {
 
   static let hexInvalidCharset = CharacterSet(charactersIn: "1234567890ABCDEF").inverted
   static func isValidHexString(_ hex: String) -> Bool {
-    // TODO: would a regex be better? [0-9A-F]{6}
+    // TODO: IMPROVE consider using a regex here: [0-9A-F]{6}
     guard hex.characters.count == 6 else {
       return false
     }

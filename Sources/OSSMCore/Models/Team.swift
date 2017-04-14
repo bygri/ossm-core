@@ -75,10 +75,7 @@ extension Team: Preparation {
     try database.create(self) { t in
       t.id()
       t.string("display_name")
-      // TODO: use below syntax instead of t.parent() when foreignId can be optional
-      // https://github.com/vapor/fluent/pull/228
-      // t.foreignId(for: Club.self, optional: true)
-      t.parent(idKey: "club_id", idType: Club.idType, optional: true)
+      t.foreignId(for: Club.self, optional: true)
       t.int("location_id")
       t.int("cash_on_hand")
     }
