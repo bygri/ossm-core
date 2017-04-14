@@ -73,7 +73,7 @@ extension Team: Preparation {
 
   public static func prepare(_ database: Fluent.Database) throws {
     try database.create(self) { t in
-      t.id(for: self)
+      t.id()
       t.string("display_name")
       // TODO: use below syntax instead of t.parent() when foreignId can be optional
       // https://github.com/vapor/fluent/pull/228

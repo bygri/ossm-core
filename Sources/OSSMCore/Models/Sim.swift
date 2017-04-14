@@ -64,7 +64,7 @@ extension Sim: Preparation {
 
   public static func prepare(_ database: Fluent.Database) throws {
     try database.create(self) { t in
-      t.id(for: self)
+      t.id()
       t.string("first_name")
       t.string("last_name")
       t.string("nick_name")

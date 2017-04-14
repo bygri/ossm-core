@@ -62,7 +62,7 @@ extension ManagerTeamAccess: Preparation {
 
   public static func prepare(_ database: Fluent.Database) throws {
     try database.create(self) { t in
-      t.id(for: self)
+      t.id()
       t.foreignId(for: Manager.self)
       t.foreignId(for: Team.self)
       t.int("access_type")

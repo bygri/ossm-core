@@ -67,7 +67,7 @@ extension Transaction: Preparation {
 
   public static func prepare(_ database: Fluent.Database) throws {
     try database.create(self) { t in
-      t.id(for: self)
+      t.id()
       t.foreignId(for: Team.self)
       t.int("date")
       t.int("credit_account")

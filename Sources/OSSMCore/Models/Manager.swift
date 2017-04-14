@@ -33,7 +33,7 @@ extension Manager: Preparation {
 
   public static func prepare(_ database: Fluent.Database) throws {
     try database.create(self) { t in
-      t.id(for: self)
+      t.id()
       t.string("display_name")
       t.string("email")
     }

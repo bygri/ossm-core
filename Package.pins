@@ -23,7 +23,7 @@
       "package": "Fluent",
       "reason": null,
       "repositoryURL": "https://github.com/vapor/fluent.git",
-      "version": "2.0.0-beta.16"
+      "version": "2.0.0-beta.19"
     },
     {
       "package": "Node",
