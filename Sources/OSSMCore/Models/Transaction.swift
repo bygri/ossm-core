@@ -55,7 +55,7 @@ public final class Transaction: Entity {
   public func didCreate() {
     // If the transaction affected cash on hand, recalculate cash on hand.
     if creditAccount == .cashOnHand || debitAccount == .cashOnHand {
-      // TODO IMPROVE: `didCreate()` cannot throw, but `team().get()` can throw.
+      // TODO: IMPROVE: `didCreate()` cannot throw, but `team().get()` can throw.
       // This is a wishy-washy 'silent fail'.
       try? team().get()?.recalculateCashOnHand()
     }
