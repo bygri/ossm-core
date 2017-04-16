@@ -11,8 +11,8 @@ class ClubTests: XCTestCase {
   func testInMemoryDatabase() throws {
     let driver = try MemoryDriver()
     let database = Database(driver)
-    try Club.prepare(database)
     try Manager.prepare(database)
+    try Club.prepare(database)
     // Create a club
     let location = try Location(id: 0, name: "location")
     try Location.buildIndex(fromRoot: location)

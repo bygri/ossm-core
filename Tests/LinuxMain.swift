@@ -8,6 +8,10 @@ XCTMain([
 
   // Configuration
   testCase(ConfigurationTests.allTests),
+  testCase(PersistenceTests.allTests),
+
+  // Economy
+  testCase(TransactionTests.allTests),
 
   // Geography
   testCase(LocationTests.allTests),
@@ -15,15 +19,15 @@ XCTMain([
   // Localization
   testCase(LocalizationTests.allTests),
 
-  // Models
+  // Population
+  testCase(NamesTests.allTests),
+  testCase(SimTests.allTests),
+
+  // Teams
   testCase(ClubTests.allTests),
-  testCase(PersistenceTests.allTests),
-  testCase(TransactionTests.allTests),
+
   // Utilities
   testCase(ColorTests.allTests),
   testCase(NodeConvertibleEnumTests.allTests),
-
-  // Population
-  testCase(NamesTests.allTests),
 
 ])
