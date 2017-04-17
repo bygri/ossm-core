@@ -71,7 +71,8 @@ extension Club: Preparation {
     try database.create(self) { t in
       t.id()
       t.string("display_name")
-      t.foreignId(for: Manager.self)
+      // t.foreignId(for: Manager.self) // TODO: replace below when this line works
+      t.parent(idKey: Manager.foreignIdKey, idType: Manager.idType)
       t.int("location_id")
       t.string("primary_color", length: 6)
       t.string("secondary_color", length: 6)
